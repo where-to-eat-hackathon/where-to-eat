@@ -1,0 +1,9 @@
+---
+apiVersion: v2
+name: where-to-eat-metachart
+version: "0.1.0"
+
+dependencies:
+  - name: "rabbitmq"
+    version: "12.4.2"
+    repository: "https://charts.bitnami.com/bitnami"
