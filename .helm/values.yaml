@@ -16,6 +16,9 @@ rabbitmq:
       cpu: 400m
       memory: "512Mi"
 
+  clustering:
+    forceBoot: true
+
 qdrant:
   resources:
     requests:
