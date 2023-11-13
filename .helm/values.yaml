@@ -4,9 +4,9 @@
 rabbitmq:
   global:
     storageClass: *storageclass
-  auth:
-    username: "${RMQ_USERNAME}"
-    password: "${RMQ_PASSWORD}"
+  # auth:
+  #   username: "${RMQ_USERNAME}"
+  #   password: "${RMQ_PASSWORD}"
 
   resources:
     requests:
