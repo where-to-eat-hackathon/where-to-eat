@@ -1,6 +1,8 @@
 ---
 name: "Build images and push to Github container registry"
-on: ["push"]
+on:
+  push:
+    branches: ["*"]
 jobs:
   generate-matrix:
     name: "Build images for modified components"
