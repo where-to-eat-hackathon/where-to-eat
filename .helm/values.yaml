@@ -1,0 +1,31 @@
+---
+.storage-class: &storageclass "csi-ceph-ssd-gz1-retain"
+
+rabbitmq:
+  global:
+    storageClass: *storageclass
+  # auth:
+  #   username: "${RMQ_USERNAME}"
+  #   password: "${RMQ_PASSWORD}"
+
+  resources:
+    requests:
+      cpu: 300m
+      memory: "256Mi"
+    limits:
+      cpu: 800m
+      memory: "512Mi"
+
+  clustering:
+    forceBoot: true
+
+qdrant:
+  resources:
+    requests:
+      cpu: 200m
+      memory: "512Mi"
+    limits:
+      cpu: 1
+      memory: "1024Mi"
+  persistence:
+    storageClassName: *storageclass

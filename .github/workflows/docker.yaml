@@ -1,0 +1,93 @@
+---
+name: "Build images and push to Github container registry"
+on:
+  push:
+    branches: ["*"]
+    paths:
+      - python-service
+      - telegram-bot
+jobs:
+  generate-matrix:
+    name: "Build images for modified components"
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check changed files
+        id: diff
+        run: |
+          if [ $GITHUB_BASE_REF ]; then
+            # Pull Request
+            git fetch origin $GITHUB_BASE_REF --depth=1
+            export DIFF=$( git diff --name-only origin/$GITHUB_BASE_REF $GITHUB_SHA )
+            echo "Diff between origin/$GITHUB_BASE_REF and $GITHUB_SHA"
+          else
+            # Push
+            git fetch origin ${{ github.event.before }} --depth=1
+            export DIFF=$( git diff --name-only ${{ github.event.before }} $GITHUB_SHA )
+            echo "Diff between ${{ github.event.before }} and $GITHUB_SHA"
+          fi
+          echo "$DIFF"
+          # Escape newlines (replace \n with %0A)
+          echo "diff=$( echo "$DIFF" | sed ':a;N;$!ba;s/\n/%0A/g' )" >> $GITHUB_OUTPUT
+      - name: Set matrix for build
+        id: set-matrix
+        run: |
+          DIFF="${{ steps.diff.outputs.diff }}"
+          JSON="{\"include\":["
+
+          while read path; do
+            # Set $directory to substring before /
+            directory="$( echo $path | cut -d'/' -f1 -s )"
+
+            if [ -z "$directory" ]; then
+              continue
+            elif [ "$directory" == .git ]; then
+              continue
+            elif [ "$directory" == .github ]; then
+              continue
+            elif [ "$directory" == .helm ]; then
+              continue
+            elif [ "$path" == *.md ]; then
+              continue
+            fi
+
+            # Add build to the matrix only if it is not already included
+            JSONline="{\"directory\": \"$directory\"},"
+            if [[ "$JSON" != *"$JSONline"* ]]; then
+              JSON="$JSON$JSONline"
+            fi
+          done <<< "$DIFF"
+
+          # Remove last "," and add closing brackets
+          if [[ $JSON == *, ]]; then
+            JSON="${JSON%?}"
+          fi
+          JSON="$JSON]}"
+          echo $JSON
+
+          # Set output
+          echo "matrix=$( echo "$JSON" )" >> $GITHUB_OUTPUT
+
+  build-images:
+    name: Build "${{ matrix.directory }}"
+    needs: generate-matrix
+    strategy:
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix )}}
+    runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: "ghcr.io/${GITHUB_REPOSITORY}/${{ matrix.directory }}:${GITHUB_REF_NAME}"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login into registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+
+      - name: Build container image ("${{ matrix.directory }}")
+        run: |
+          cd ${{ matrix.directory }}
+          docker build -t "$IMAGE_NAME" --label "runid=${GITHUB_RUN_ID}"
+
+      - name: Push to container registry
+        run: docker push "$IMAGE_NAME"

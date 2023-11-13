@@ -1,0 +1,9 @@
+dependencies:
+- name: rabbitmq
+  repository: https://charts.bitnami.com/bitnami
+  version: 12.4.2
+- name: qdrant
+  repository: https://qdrant.github.io/qdrant-helm
+  version: 0.6.1
+digest: sha256:ad8a5177cdbdb47ab800a3e05d2ded26a3516f7966f350a7f47b72b2ca92c4d3
+generated: "2023-11-13T22:34:19.719496973+05:00"
