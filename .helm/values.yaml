@@ -1,0 +1,22 @@
+---
+rabbitmq:
+  auth:
+    username: "${RMQ_USERNAME}"
+    password: "${RMQ_PASSWORD}"
+
+  resources:
+    requests:
+      cpu: 200m
+      memory: "256Mi"
+    limits:
+      cpu: 400m
+      limits: "512Mi"
+
+qdrant:
+  resources:
+    requests:
+      cpu: 200m
+      memory: "512Mi"
+    limits:
+      cpu: 1
+      memory: "1024Mi"
