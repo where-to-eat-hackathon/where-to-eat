@@ -5,19 +5,14 @@ on:
     paths:
       - ".helm/**"
 jobs:
-  setup-authtool:
-    name: "Install keystone-auth"
-    runs-on: ubuntu-latest
-    steps:
-      - run: |
-          curl -sSL https://hub.mcs.mail.ru/repository/client-keystone-auth/latest/linux/client-install.sh | bash
-
   deploy:
     name: "Deploy to kubernetes"
     runs-on: ubuntu-latest
-    needs: ["setup-authtool"]
     steps:
       - uses: actions/checkout@v4
+      - name: Install keystone-auth
+        run: |
+          curl -sSL https://hub.mcs.mail.ru/repository/client-keystone-auth/latest/linux/client-install.sh | bash
 
       - name: Install werf
         uses: werf/actions/install@v1.2
