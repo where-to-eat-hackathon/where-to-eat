@@ -10,10 +10,10 @@ rabbitmq:
 
   resources:
     requests:
-      cpu: 200m
+      cpu: 300m
       memory: "256Mi"
     limits:
-      cpu: 400m
+      cpu: 800m
       memory: "512Mi"
 
   clustering:
