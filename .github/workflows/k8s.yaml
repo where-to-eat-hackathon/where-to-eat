@@ -1,0 +1,37 @@
+---
+name: "Deploy to k8s"
+on:
+  paths:
+    - ".helm/**"
+jobs:
+  setup-authtool:
+    name: "Install keystone-auth"
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -sSL https://hub.mcs.mail.ru/repository/client-keystone-auth/latest/linux/client-install.sh | bash
+
+  deploy:
+    name: "Deploy to kubernetes"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install werf
+        uses: werf/actions/install@v1.2
+
+      - name: "Deploy"
+        run: |
+          . $(werf ci-env github --as-file)
+          cd .helm
+
+          export PATH=$HOME/vk-cloud-solutions/bin:$PATH
+
+          envsubst < values.yaml > values-deploy.yaml
+          werf helm dependency update
+          werf helm upgrade \
+            --install \
+            -n where-to-eat-${GITHUB_REF_NAME} \
+            --atomic \
+            -f values-deploy.yaml \
+            where-to-eat .
+        env:
+          WERF_KUBECONFIG_BASE64: ${{ secrets.KUBE_CONFIG_BASE64_DATA }}
