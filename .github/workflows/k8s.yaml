@@ -1,8 +1,9 @@
 ---
 name: "Deploy to k8s"
 on:
-  paths:
-    - ".helm/**"
+  push:
+    paths:
+      - ".helm/**"
 jobs:
   setup-authtool:
     name: "Install keystone-auth"
