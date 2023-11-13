@@ -40,9 +40,13 @@ jobs:
 
             if [ -z "$directory" ]; then
               continue
-            elif [ "$directory" == docs ]; then
+            elif [ "$directory" == .git ]; then
               continue
-            elif [ "$path" == *.* ]; then
+            elif [ "$directory" == .github ]; then
+              continue
+            elif [ "$directory" == .helm ]; then
+              continue
+            elif [ "$path" == *.md ]; then
               continue
             fi
 
