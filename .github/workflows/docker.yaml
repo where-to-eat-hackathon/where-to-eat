@@ -68,6 +68,8 @@ jobs:
     strategy:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix )}}
     runs-on: ubuntu-latest
+    env:
+      IMAGE_NAME: "ghcr.io/${GITHUB_REPOSITORY}/${{ matrix.directory }}:${GITHUB_REF}"
     steps:
       - uses: actions/checkout@v4
 
@@ -75,8 +77,6 @@ jobs:
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
 
       - name: Build container image ("${{ matrix.directory }}")
-        env:
-          IMAGE_NAME: "ghcr.io/${GITHUB_REPOSITORY}/${{ matrix.directory }}:latest"
         run: |
           cd ${{ matrix.directory }}
           docker build -t "$IMAGE_NAME" --label "runid=${GITHUB_RUN_ID}"
