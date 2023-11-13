@@ -10,7 +10,7 @@ rabbitmq:
       memory: "256Mi"
     limits:
       cpu: 400m
-      limits: "512Mi"
+      memory: "512Mi"
 
 qdrant:
   resources:
