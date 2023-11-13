@@ -1,5 +1,9 @@
 ---
+.storage-class: &storageclass "csi-ceph-ssd-gz1-retain"
+
 rabbitmq:
+  global:
+    storageClass: *storageclass
   auth:
     username: "${RMQ_USERNAME}"
     password: "${RMQ_PASSWORD}"
@@ -20,3 +24,5 @@ qdrant:
     limits:
       cpu: 1
       memory: "1024Mi"
+  persistence:
+    storageClassName: *storageclass
