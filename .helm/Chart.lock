@@ -2,5 +2,8 @@ dependencies:
 - name: rabbitmq
   repository: https://charts.bitnami.com/bitnami
   version: 12.4.2
-digest: sha256:634bbd18e08f00af0953f562751c5d01fec391ae60528eff72d93e2f9646ce8a
-generated: "2023-11-13T19:59:33.025054925+05:00"
+- name: qdrant
+  repository: https://qdrant.github.io/qdrant-helm
+  version: 0.6.1
+digest: sha256:b732b616f4925c852b2423187aaff4a4bb36d21d1d9eb9bc0477989604d50125
+generated: "2023-11-13T20:05:38.167594844+05:00"
