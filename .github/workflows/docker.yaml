@@ -2,6 +2,7 @@
 name: "Build images and push to Github container registry"
 on:
   push:
+    pull_requests:
     branches: ["*"]
     # paths:
     #   - nlp-service/**
@@ -10,72 +11,33 @@ jobs:
   generate-matrix:
     name: "Build images for modified components"
     outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      changed: ${{ steps.set-matrix.outputs.matrix }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Check changed files
-        id: diff
-        run: |
-          if [ $GITHUB_BASE_REF ]; then
-            # Pull Request
-            git fetch origin $GITHUB_BASE_REF --depth=1
-            export DIFF=$( git diff --name-only origin/$GITHUB_BASE_REF $GITHUB_SHA )
-            echo "Diff between origin/$GITHUB_BASE_REF and $GITHUB_SHA"
-          else
-            # Push
-            git fetch origin ${{ github.event.before }} --depth=1
-            export DIFF=$( git diff --name-only ${{ github.event.before }} $GITHUB_SHA )
-            echo "Diff between ${{ github.event.before }} and $GITHUB_SHA"
-          fi
-          echo "$DIFF"
-          # Escape newlines (replace \n with %0A)
-          echo "diff=$( echo "$DIFF" | sed ':a;N;$!ba;s/\n/%0A/g' )" >> $GITHUB_OUTPUT
-      - name: Set matrix for build
-        id: set-matrix
-        run: |
-          DIFF="${{ steps.diff.outputs.diff }}"
-          JSON="{\"include\":["
-
-          while read path; do
-            # Set $directory to substring before /
-            directory="$( echo $path | cut -d'/' -f1 -s )"
-
-            if [ -z "$directory" ]; then
-              continue
-            elif [ "$directory" == .git ]; then
-              continue
-            elif [ "$directory" == .github ]; then
-              continue
-            elif [ "$directory" == .helm ]; then
-              continue
-            elif [ "$path" == *.md ]; then
-              continue
-            fi
-
-            # Add build to the matrix only if it is not already included
-            JSONline="{\"directory\": \"$directory\"},"
-            if [[ "$JSON" != *"$JSONline"* ]]; then
-              JSON="$JSON$JSONline"
-            fi
-          done <<< "$DIFF"
-
-          # Remove last "," and add closing brackets
-          if [[ $JSON == *, ]]; then
-            JSON="${JSON%?}"
-          fi
-          JSON="$JSON]}"
-          echo $JSON
-
-          # Set output
-          echo "matrix=$( echo "$JSON" )" >> $GITHUB_OUTPUT
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v40
+        with:
+          json: true
+          quotepath: false
+          dir_names: true
+          dir_names_exclude_current_dir: true
+          dir_names_max_depth: 1
+          dir_names_include_files: "nlp-service/**/*"
+          files: "nlp-service/**/*"
+      - name: List all changed files
+        run: echo '${{ steps.changed-files.outputs.all_changed_files }}'
+      - id: set-matrix
+        run: echo "matrix={\"files\":${{ steps.changed-files.outputs.all_changed_files }}}" >> "$GITHUB_OUTPUT"
 
   build-images:
-    name: Build "${{ matrix.directory }}"
+    name: Build "${{ matrix.files }}"
     needs: generate-matrix
     strategy:
-      matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix )}}
+      matrix: ${{ fromJSON(needs.generate-matrix.outputs.changed) }}
     runs-on: ubuntu-latest
+    if: ${{ needs.generate-matrix.outputs.changed }}
     env:
       IMAGE_NAME: "ghcr.io/${GITHUB_REPOSITORY}/${{ matrix.directory }}:${GITHUB_REF_NAME}_${GITHUB_SHA:0:6}"
     steps:
