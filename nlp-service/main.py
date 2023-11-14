@@ -15,8 +15,8 @@ from common import (
     QDRANT_COLLECTION_NAME_ENVAR_KEY_NAME,
     RESPONSE_ADDRESS_KEY,
     RESPONSE_TYPE_KEY,
-    RMQ_OUTPUT_PORT_ENVAR_KEY_NAME,
     ServiceResponse,
+    RMQ_OUTPUT_PORT_ENVAR_KEY_NAME,
     ServiceResponseBody,
     ServiceRequest,
 )
