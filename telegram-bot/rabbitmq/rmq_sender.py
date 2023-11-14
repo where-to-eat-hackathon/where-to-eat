@@ -1,7 +1,14 @@
 import pika
 
 class RMQSender:
-    def __init__(self, queue: str, host: str, port: str, user: str, password: str) -> None:
+    def __init__(
+        self, 
+        queue: str, 
+        host: str, 
+        port: str, 
+        user: str, 
+        password: str,
+    ) -> None:
         self.queue = queue
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(
             host=host, 
@@ -17,6 +24,7 @@ class RMQSender:
                                    routing_key=self.queue,
                                    body=str(message),
                                    properties=pika.BasicProperties(
+                                       content_encoding='utf-8',
                                        delivery_mode=1,
                                    ))
 
