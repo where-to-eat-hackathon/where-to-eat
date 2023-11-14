@@ -29,8 +29,6 @@ jobs:
       matrix:
         component: ${{ fromJSON(needs.generate-matrix.outputs.changed) }}
     runs-on: ubuntu-latest
-    env:
-      IMAGE_NAME: "ghcr.io/${GITHUB_REPOSITORY}/${{ matrix.component }}:${GITHUB_REF_NAME}_${GITHUB_SHA:0:6}"
     steps:
       - uses: actions/checkout@v4
 
@@ -40,7 +38,10 @@ jobs:
       - name: Build container image ("${{ matrix.component }}")
         run: |
           cd ${{ matrix.component }}
+          export IMAGE_NAME="ghcr.io/${GITHUB_REPOSITORY}/${{ matrix.component }}:${GITHUB_REF_NAME}_${GITHUB_SHA:0:6}"
           docker build -t "$IMAGE_NAME" --label "runid=${GITHUB_RUN_ID}" .
 
       - name: Push to container registry
-        run: docker push "$IMAGE_NAME"
+        run: |
+          export IMAGE_NAME="ghcr.io/${GITHUB_REPOSITORY}/${{ matrix.component }}:${GITHUB_REF_NAME}_${GITHUB_SHA:0:6}"
+          docker push "$IMAGE_NAME"
