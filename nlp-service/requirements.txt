@@ -3,7 +3,6 @@ anyio==4.0.0
 certifi==2023.7.22
 charset-normalizer==3.3.2
 click==8.1.7
-dataclasses-json==0.6.2
 filelock==3.9.0
 fsspec==2023.10.0
 grpcio==1.59.2
@@ -19,14 +18,11 @@ idna==3.4
 Jinja2==3.1.2
 joblib==1.3.2
 MarkupSafe==2.1.3
-marshmallow==3.20.1
 mpmath==1.3.0
-mypy-extensions==1.0.0
 networkx==3.0
 nltk==3.8.1
 numpy==1.26.2
 packaging==23.2
-pika==1.3.2
 Pillow==10.1.0
 portalocker==2.8.2
 protobuf==4.25.0
@@ -49,6 +45,5 @@ torch==2.1.0+cpu
 torchvision==0.16.0
 tqdm==4.66.1
 transformers==4.35.1
-typing-inspect==0.9.0
 typing_extensions==4.8.0
 urllib3==1.26.18

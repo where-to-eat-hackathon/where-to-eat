@@ -4,8 +4,8 @@ on:
   push:
     branches: ["*"]
     paths:
-      - python-service
-      - telegram-bot
+      - nlp-service/**
+      - telegram-bot/**
 jobs:
   generate-matrix:
     name: "Build images for modified components"
