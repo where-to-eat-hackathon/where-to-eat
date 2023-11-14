@@ -77,7 +77,7 @@ jobs:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix )}}
     runs-on: ubuntu-latest
     env:
-      IMAGE_NAME: "ghcr.io/${GITHUB_REPOSITORY}/${{ matrix.directory }}:${GITHUB_REF_NAME}"
+      IMAGE_NAME: "ghcr.io/${GITHUB_REPOSITORY}/${{ matrix.directory }}:${GITHUB_REF_NAME}_${GITHUB_SHA:0:6}"
     steps:
       - uses: actions/checkout@v4
 
