@@ -1,6 +1,5 @@
 # ENVIRONMENT VARIABLES.
 from dataclasses import dataclass
-
 from dataclasses_json import dataclass_json
 
 RMQ_URL_ENVAR_KEY_NAME = "RMQ_URL"
@@ -26,6 +25,7 @@ RESPONSE_TYPE_KEY = "type"
 @dataclass
 class ServiceRequest:
     """Response from service."""
+
     request_id: int
     message: str
 
@@ -42,5 +42,6 @@ class ServiceResponseBody:
 @dataclass
 class ServiceResponse:
     """Response from service."""
+
     request_id: int
     body: ServiceResponseBody
