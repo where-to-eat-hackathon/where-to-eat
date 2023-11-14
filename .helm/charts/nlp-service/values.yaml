@@ -21,4 +21,5 @@ rabbitmq:
 qdrant:
   url: "{{ .Release.Name }}-qdrant"
   httpPort: 6333
+  grpcPort: 6334
   collectionName: "example-collection"

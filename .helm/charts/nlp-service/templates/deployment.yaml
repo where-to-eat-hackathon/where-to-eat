@@ -52,6 +52,8 @@ spec:
               value: {{ tpl .url $ }}
             - name: "QDRANT_HTTP_PORT"
               value: "{{ .httpPort }}"
+            - name: "QDRANT_GRPC_PORT"
+              value: "{{ .grpcPort }}"
             - name: "QDRANT_COLLECTION_NAME"
               value: "{{ .collectionName }}"
             {{- end }}
