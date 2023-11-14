@@ -29,3 +29,14 @@ qdrant:
       memory: "1024Mi"
   persistence:
     storageClassName: *storageclass
+
+nlp-service:
+  image:
+    tag: 0.1.0
+  resources:
+    requests:
+      cpu: 500m
+      memory: "1024Mi"
+    limits:
+      cpu: 1
+      memory: "2048Mi"

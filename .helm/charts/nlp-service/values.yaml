@@ -2,7 +2,7 @@
 image:
   registry: ghcr.io
   project: where-to-eat-hackathon/where-to-eat
-  tag: main
+  tag: 0.1.0
 
 replicas: 1
 
