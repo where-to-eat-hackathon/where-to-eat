@@ -22,7 +22,7 @@ jobs:
           included-paths: "nlp-service,telegram-bot"
 
   build-images:
-    name: Build "${{ matrix.files }}"
+    name: Build "${{ matrix.component }}"
     needs: generate-matrix
     if: ${{ needs.generate-matrix.outputs.changed != '[]' }}
     strategy:
@@ -40,7 +40,7 @@ jobs:
       - name: Build container image ("${{ matrix.component }}")
         run: |
           cd ${{ matrix.component }}
-          docker build -t "$IMAGE_NAME" --label "runid=${GITHUB_RUN_ID}"
+          docker build -t "$IMAGE_NAME" --label "runid=${GITHUB_RUN_ID}" .
 
       - name: Push to container registry
         run: docker push "$IMAGE_NAME"
