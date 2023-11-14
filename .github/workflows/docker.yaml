@@ -29,15 +29,15 @@ jobs:
       - name: List all changed files
         run: echo '${{ steps.changed-files.outputs.all_changed_files }}'
       - id: set-matrix
-        run: echo "matrix={\"files\":${{ steps.changed-files.outputs.all_changed_files }}}" >> "$GITHUB_OUTPUT"
+        run: echo "matrix=${{ steps.changed-files.outputs.all_changed_files }}" >> "$GITHUB_OUTPUT"
 
   build-images:
     name: Build "${{ matrix.files }}"
     needs: generate-matrix
+    if: ${{ needs.generate-matrix.outputs.changed != '[]' }}
     strategy:
       matrix: ${{ fromJSON(needs.generate-matrix.outputs.changed) }}
     runs-on: ubuntu-latest
-    if: ${{ needs.generate-matrix.outputs.changed }}
     env:
       IMAGE_NAME: "ghcr.io/${GITHUB_REPOSITORY}/${{ matrix.directory }}:${GITHUB_REF_NAME}_${GITHUB_SHA:0:6}"
     steps:
