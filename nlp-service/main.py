@@ -10,7 +10,7 @@ from common import (
     RMQ_USERNAME_ENVAR_KEY_NAME,
     OUTPUT_QUEUE_NAME_ENVAR_KEY_NAME,
     QDRANT_URL_ENVAR_KEY_NAME,
-    QDRANT_PORT_ENVAR_KEY_NAME,
+    QDRANT_HTTP_PORT_ENVAR_KEY_NAME,
     QDRANT_COLLECTION_NAME_ENVAR_KEY_NAME,
     RESPONSE_ADDRESS_KEY,
     RESPONSE_TYPE_KEY,
@@ -75,7 +75,7 @@ class PythonService:
         )
 
         qdrant_url = os.getenv(QDRANT_URL_ENVAR_KEY_NAME)
-        qdrant_port = os.getenv(QDRANT_PORT_ENVAR_KEY_NAME)
+        qdrant_port = os.getenv(QDRANT_HTTP_PORT_ENVAR_KEY_NAME)
         qdrant_client = QdrantClient(host=qdrant_url, port=qdrant_port)
 
         self.qdrant_client = qdrant_client

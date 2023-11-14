@@ -50,7 +50,7 @@ spec:
             {{- with .Values.qdrant }}
             - name: "QDRANT_URL"
               value: {{ tpl .url $ }}
-            - name: "QDRANT_PORT"
+            - name: "QDRANT_HTTP_PORT"
               value: "{{ .httpPort }}"
             - name: "QDRANT_COLLECTION_NAME"
               value: "{{ .collectionName }}"
