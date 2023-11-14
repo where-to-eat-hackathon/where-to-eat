@@ -1,0 +1,24 @@
+---
+image:
+  registry: ghcr.io
+  project: where-to-eat-hackathon/where-to-eat
+  tag: main
+
+replicas: 1
+
+rabbitmq:
+  url: "{{ .Release.Name }}-rabbitmq"
+  port: 5672
+  inputQueueName: "jobs"
+  outputQueueName: "results"
+  auth:
+    username: "user"
+    secret:
+      userKey: ""
+      passwordKey: "rabbitmq-password"
+      secretName: "{{ .Release.Name }}-rabbitmq"
+
+qdrant:
+  url: "{{ .Release.Name }}-qdrant"
+  httpPort: 6333
+  collectionName: "example-collection"
