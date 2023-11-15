@@ -3,20 +3,23 @@ import json
 
 
 class RMQSender:
+
     def __init__(
-        self, 
-        queue: str, 
-        host: str, 
-        port: str, 
-        user: str, 
+        self,
+        queue: str,
+        host: str,
+        port: str,
+        user: str,
         password: str,
     ) -> None:
         self.queue = queue
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters(
-            host=host, 
-            port=port, 
-            credentials=pika.PlainCredentials(username=user, password=password),
-        ))
+        self.connection = pika.BlockingConnection(
+            pika.ConnectionParameters(
+                host=host,
+                port=port,
+                credentials=pika.PlainCredentials(username=user,
+                                                  password=password),
+            ))
         self.channel = self.connection.channel()
         self.channel.queue_declare(queue=queue, durable=True)
 
