@@ -42,7 +42,7 @@ nlp-service:
       cpu: 1
       memory: "2048Mi"
   qdrant:
-    collectionName: "reviews-MiniLM-L12-L2"
+    collectionName: "reviews-MiniLM-L12-V2"
 
 telegram-bot:
   image:
