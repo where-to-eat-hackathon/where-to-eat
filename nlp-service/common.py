@@ -46,3 +46,12 @@ class ServiceResponse:
 
     request_id: int
     body: ServiceResponseBody
+
+
+@dataclass_json
+@dataclass
+class GeocodedAddress:
+    """Text address transformed into coordinates."""
+
+    latitude: float
+    longitude: float

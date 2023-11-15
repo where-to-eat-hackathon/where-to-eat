@@ -18,11 +18,14 @@ from common import (
     RMQ_OUTPUT_PORT_ENVAR_KEY_NAME,
     ServiceResponse,
     ServiceResponseBody,
-    ServiceRequest,
+    ServiceRequest, GeocodedAddress,
 )
 from sentence_transformers import SentenceTransformer
-from typing import List
+from typing import List, Optional
 from qdrant_client import QdrantClient
+
+import http.client
+from urllib.parse import quote
 
 
 class PythonService:
@@ -89,6 +92,31 @@ class PythonService:
 
         qdrant_collection_name = os.getenv(QDRANT_COLLECTION_NAME_ENVAR_KEY_NAME)
         self.qdrant_collection_name = qdrant_collection_name
+
+        # ============ Geocoder configuration ==============
+        self.encoder_connection = http.client.HTTPSConnection('geocode.maps.co')
+
+    def transform_address_into_coordinates(self, address: str) -> Optional[GeocodedAddress]:
+        query_params = []
+        for address in address.split(", "):
+            # `quote` used to encode russian symbols.
+            query_params.extend([quote(single_param) for single_param in address.split(" ")])
+        address_as_param = "+".join(query_params)
+        self.encoder_connection.request("GET", f"/search?q={address_as_param}")
+
+        response = self.encoder_connection.getresponse()
+        if response.status == 429:
+            # We've exceeded requests per second limit. We may wait for some time and recursively call ourselves.
+            return None
+
+        data = response.read()
+        deserialized_data = json.loads(data)
+        if len(deserialized_data) >= 1:
+            nearest_res = deserialized_data[0]
+            return GeocodedAddress(float(nearest_res["lat"]), float(nearest_res["lon"]))
+        else:
+            # Server doesn't found anything.
+            return None
 
     def search_db(self, message) -> List[ServiceResponseBody]:
         embedding = self.transformer_model.encode([message])[0]
