@@ -43,3 +43,12 @@ nlp-service:
       memory: "2048Mi"
   qdrant:
     collectionName: "reviews-MiniLM-L12-L2"
+
+telegram-bot:
+  resources:
+    requests:
+      cpu: 100m
+      memory: "256Mi"
+    limits:
+      cpu: 250m
+      memory: "384Mi"
