@@ -9,7 +9,8 @@ def main():
     # start_sync_bot(sender)
     # tg_bot_task = threading.Thread(target=start_sync_bot, args=(sender,))
 
-    mq_util_task = threading.Thread(target=run_listener, args=(send_sync_answer,))
+    mq_util_task = threading.Thread(target=run_listener,
+                                    args=(send_sync_answer,))
     mq_util_task.start()
     sleep(3)
     # tg_bot_task.start()
