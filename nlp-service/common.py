@@ -41,9 +41,9 @@ class ServiceRequest:
     """Request from service."""
 
     request_id: int
-    town: Optional[str]
-    location: Optional[GeocodedAddress]
     message: str
+    town: Optional[str] = None
+    location: Optional[GeocodedAddress] = None
 
 
 @dataclass_json
@@ -54,7 +54,7 @@ class ServiceResponseBody:
     type: List[str]
     rating: float
     comment: str
-    geocode: Optional[GeocodedAddress]
+    geocode: Optional[GeocodedAddress] = None
 
 
 @dataclass_json
