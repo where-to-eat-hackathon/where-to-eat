@@ -4,9 +4,9 @@ on:
   push:
     pull_requests:
     branches: ["*"]
-    # paths:
-    #   - nlp-service/**
-    #   - telegram-bot/**
+    paths:
+      - nlp-service/**
+      - telegram-bot/**
 jobs:
   generate-matrix:
     name: "Build images for modified components"
