@@ -33,7 +33,7 @@ qdrant:
 nlp-service:
   image:
     project: where-to-eat-hackathon/where-to-eat/nlp-service
-    tag: python-service_ac9176
+    tag: python-service_ed477f
   resources:
     requests:
       cpu: 300m
