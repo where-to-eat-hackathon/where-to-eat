@@ -1,6 +1,5 @@
 import os
 
-
 rmq_host = os.getenv('RMQHOST')
 if rmq_host is None:
     rmq_host = 'localhost'
@@ -31,7 +30,6 @@ if rmq_place_suggestion_queue is None:
     rmq_place_suggestion_queue = 'outq'
     raise Exception('rmq place_suggestion queue  is not provided')
 
-
 answer_delay_sec = 120
 BOT_TOKEN = ""
 BOT_LINK = ""
@@ -42,8 +40,3 @@ if "ANSWER_DELAY_SEC" in os.environ:
 BOT_TOKEN = ""
 if "BOT_TOKEN" in os.environ:
     BOT_TOKEN = os.getenv("BOT_TOKEN")
-
-BOT_LINK = ""
-if "BOT_LINK" in os.environ:
-    BOT_LINK = os.getenv("BOT_LINK")
-

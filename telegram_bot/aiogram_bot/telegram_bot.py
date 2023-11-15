@@ -4,7 +4,6 @@ from aiogram.filters.command import Command
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.base import StorageKey
-from aiogram.exceptions import TelegramBadRequest
 from typing import List
 import asyncio
 import threading
@@ -15,7 +14,6 @@ from telegram_bot import config
 
 
 # TODO for tests
-from .telegram_repository import message_repo
 
 __all__ = ["async_main", "sync_main", "send_async_answer",
            "send_sync_answer", "send_qwery_to_queue", "start_sync_bot"]
@@ -24,7 +22,6 @@ __all__ = ["async_main", "sync_main", "send_async_answer",
 class BotConsts:
     answer_delay_sec = config.answer_delay_sec
     BOT_TOKEN = config.BOT_TOKEN
-    BOT_LINK = config.BOT_LINK
     bot = Bot(token=BOT_TOKEN)
     dp = Dispatcher()
     sender = None
@@ -86,7 +83,7 @@ async def qwery_message(msg: types.Message, state: FSMContext):
 
     data = await state.get_data()
     if income_st not in data:
-        await BotConsts.bot.send_message(msg.from_user.id, f"something gone wrong\nNo state for you yet")
+        await BotConsts.bot.send_message(msg.from_user.id, "something gone wrong\nNo state for you yet")
         await state.set_state(UserState.income_msg)
         await state.update_data(income_msg=UStates.AVAILABLE)
         await state.set_state(UserState.time_stamp)
