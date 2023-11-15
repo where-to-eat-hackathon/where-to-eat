@@ -32,6 +32,7 @@ qdrant:
 
 nlp-service:
   image:
+    project: where-to-eat-hackathon/where-to-eat/nlp-service
     tag: python-service_7cc96d
   resources:
     requests:
