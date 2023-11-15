@@ -45,6 +45,8 @@ nlp-service:
     collectionName: "reviews-MiniLM-L12-L2"
 
 telegram-bot:
+  image:
+    tag: tg-merge_7e9add
   resources:
     requests:
       cpu: 100m
