@@ -36,8 +36,8 @@ nlp-service:
     tag: python-service_7cc96d
   resources:
     requests:
-      cpu: 500m
+      cpu: 200m
       memory: "1024Mi"
     limits:
-      cpu: 1
+      cpu: 500m
       memory: "2048Mi"
