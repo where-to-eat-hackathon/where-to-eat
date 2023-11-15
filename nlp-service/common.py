@@ -50,9 +50,9 @@ class ServiceRequest:
 class ServiceResponseBody:
     address: str
     name: str
-    type: List[str]
+    rubrics: List[str]
     rating: float
-    comment: str
+    text: str
     geocode: Optional[GeocodedAddress] = None
 
 
