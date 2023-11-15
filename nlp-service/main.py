@@ -28,6 +28,27 @@ import http.client
 from urllib.parse import quote
 
 
+def find_nearest_coordinate(self, goal: GeocodedAddress, given_coords: List[GeocodedAddress]):
+    """
+    Calculation is taken from
+    https://medium.com/analytics-vidhya/finding-nearest-pair-of-latitude-and-longitude-match-using-python-ce50d62af546
+    """
+    from math import radians, cos, sin, asin, sqrt
+
+    earth_radius_km = 6371
+    goal_longitude, goal_latitude = map(radians, [goal.longitude, goal.latitude])
+    res = []
+    for specific_coord in given_coords:
+        specific_longitude, specific_latitude = map(radians, [specific_coord.longitude, specific_coord.latitude])
+        dlon = specific_longitude - goal_longitude
+        dlat = specific_latitude - goal_latitude
+        a = sin(dlat / 2) ** 2 + cos(goal_latitude) * cos(specific_latitude) * sin(dlon / 2) ** 2
+        c = 2 * asin(sqrt(a))
+        km = earth_radius_km * c
+        res.append(km)
+    return res
+
+
 class PythonService:
     def __init__(self):
         # =============== RMQ configuration ================
