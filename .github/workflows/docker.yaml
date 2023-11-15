@@ -2,7 +2,6 @@
 name: "Build images and push to Github container registry"
 on:
   push:
-    pull_requests:
     branches: ["*"]
     paths:
       - nlp-service/**
