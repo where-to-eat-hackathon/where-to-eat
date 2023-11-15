@@ -4,6 +4,9 @@ image:
   project: where-to-eat-hackathon/where-to-eat/telegram_bot
   tag: 0.1.0
 
+tgApi:
+  token: "${BOT_TOKEN}"
+
 replicas: 1
 
 rabbitmq:

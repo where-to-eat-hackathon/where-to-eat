@@ -20,6 +20,9 @@ spec:
           {{- with .Values.image }}
           image: {{ .registry }}/{{ .project }}:{{ .tag }}
           {{- end }}
+          envFrom:
+            - secretRef:
+                name: tg-bot-secret
           env:
             {{- with .Values.rabbitmq }}
             - name: "RMQHOST"
