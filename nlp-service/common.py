@@ -1,13 +1,14 @@
 # ENVIRONMENT VARIABLES.
 from dataclasses import dataclass
+from typing import Optional, List
+
 from dataclasses_json import dataclass_json
 
 RMQ_URL_ENVAR_KEY_NAME = "RMQ_URL"
 # Queue that accepts requests FROM Telegram bot.
-RMQ_INPUT_PORT_ENVAR_KEY_NAME = "RMQ_INPUT_PORT"
+RMQ_PORT_ENVAR_KEY_NAME = "RMQ_PORT"
 INPUT_QUEUE_NAME_ENVAR_KEY_NAME = "INPUT_QUEUE_NAME"
 # Queue that accepts requests FOR Telegram bot.
-RMQ_OUTPUT_PORT_ENVAR_KEY_NAME = "RMQ_INPUT_PORT"
 OUTPUT_QUEUE_NAME_ENVAR_KEY_NAME = "OUTPUT_QUEUE_NAME"
 RMQ_USERNAME_ENVAR_KEY_NAME = "RMQ_USERNAME"
 RMQ_PASSWORD_ENVAR_KEY_NAME = "RMQ_PASSWORD"
@@ -19,16 +20,29 @@ QDRANT_COLLECTION_NAME_ENVAR_KEY_NAME = "QDRANT_COLLECTION_NAME"
 # QDRANT COLLECTION FIELDS (also used as JSON fields).
 RESPONSE_ADDRESS_KEY = "address"
 RESPONSE_NAME_KEY = "name"
-RESPONSE_TYPE_KEY = "type"
+RESPONSE_TYPE_KEY = "rubrics"
+RESPONSE_RATING_KEY = "rating"
+RESPONSE_TEXT_KEY = "text"
+
+
+@dataclass_json
+@dataclass
+class GeocodedAddress:
+    """Text address transformed into coordinates."""
+
+    latitude: float
+    longitude: float
 
 
 @dataclass_json
 @dataclass
 class ServiceRequest:
-    """Response from service."""
+    """Request from service."""
 
     request_id: int
     message: str
+    town: Optional[str] = None
+    location: Optional[GeocodedAddress] = None
 
 
 @dataclass_json
@@ -36,7 +50,10 @@ class ServiceRequest:
 class ServiceResponseBody:
     address: str
     name: str
-    type: str
+    rubrics: List[str]
+    rating: float
+    text: str
+    geocode: Optional[GeocodedAddress] = None
 
 
 @dataclass_json
@@ -45,4 +62,4 @@ class ServiceResponse:
     """Response from service."""
 
     request_id: int
-    body: ServiceResponseBody
+    body: List[ServiceResponseBody]
