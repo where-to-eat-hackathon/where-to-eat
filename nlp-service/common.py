@@ -21,7 +21,7 @@ QDRANT_COLLECTION_NAME_ENVAR_KEY_NAME = "QDRANT_COLLECTION_NAME"
 # QDRANT COLLECTION FIELDS (also used as JSON fields).
 RESPONSE_ADDRESS_KEY = "address"
 RESPONSE_NAME_KEY = "name"
-RESPONSE_TYPE_KEY = "type"
+RESPONSE_TYPE_KEY = "rubrics"
 RESPONSE_RATING_KEY = "rating"
 RESPONSE_TEXT_KEY = "text"
 
@@ -54,6 +54,7 @@ class ServiceResponseBody:
     type: List[str]
     rating: float
     comment: str
+    geocode: Optional[GeocodedAddress]
 
 
 @dataclass_json
