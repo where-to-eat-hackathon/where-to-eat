@@ -29,3 +29,15 @@ qdrant:
       memory: "1024Mi"
   persistence:
     storageClassName: *storageclass
+
+nlp-service:
+  image:
+    project: where-to-eat-hackathon/where-to-eat/nlp-service
+    tag: python-service_7cc96d
+  resources:
+    requests:
+      cpu: 200m
+      memory: "1024Mi"
+    limits:
+      cpu: 500m
+      memory: "2048Mi"

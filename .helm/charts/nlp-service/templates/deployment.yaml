@@ -1,0 +1,63 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Chart.Name }}
+  labels:
+    app: nlp-service
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: nlp-service
+  template:
+    metadata:
+      labels:
+        app: nlp-service
+    spec:
+      containers:
+        - name: worker
+          {{- with .Values.image }}
+          image: {{ .registry }}/{{ .project }}:{{ .tag }}
+          {{- end }}
+          env:
+            {{- with .Values.rabbitmq }}
+            - name: "RMQ_URL"
+              value: {{ tpl .url $ }}
+            - name: "RMQ_INPUT_PORT"
+              value: "{{ .port }}"
+            - name: "INPUT_QUEUE_NAME"
+              value: {{ .inputQueueName }}
+            - name: "OUTPUT_QUEUE_NAME"
+              value: {{ .outputQueueName }}
+            {{- with .auth }}
+            - name: "RMQ_USERNAME"
+              {{- if .username }}
+              value: {{ .username }}
+              {{- else }}
+              valueFrom:
+                secretKeyRef:
+                  key: {{ tpl .secret.userKey $ }}
+                  name: {{ tpl .secret.secretName $ }}
+              {{- end }}
+            - name: "RMQ_PASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  key: {{ tpl .secret.passwordKey $ }}
+                  name: {{ tpl .secret.secretName $ }}
+            {{- end }}
+            {{- end }}
+            {{- with .Values.qdrant }}
+            - name: "QDRANT_URL"
+              value: {{ tpl .url $ }}
+            - name: "QDRANT_HTTP_PORT"
+              value: "{{ .httpPort }}"
+            - name: "QDRANT_GRPC_PORT"
+              value: "{{ .grpcPort }}"
+            - name: "QDRANT_COLLECTION_NAME"
+              value: "{{ .collectionName }}"
+            {{- end }}
+          {{- if .Values.resources }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- end }}
