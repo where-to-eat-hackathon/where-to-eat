@@ -12,8 +12,8 @@ replicas: 1
 rabbitmq:
   url: "{{ .Release.Name }}-rabbitmq"
   port: 5672
-  inputQueueName: "jobs"
-  outputQueueName: "results"
+  inputQueueName: "results"
+  outputQueueName: "jobs"
   auth:
     username: "user"
     secret:
