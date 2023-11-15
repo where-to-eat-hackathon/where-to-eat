@@ -1,13 +1,14 @@
 FROM docker.io/library/python:3.11-alpine
-WORKDIR /app
-ENV PATH=/app/venv/bin:$PATH
+WORKDIR /telegram_bot
+ENV PATH=/telegram_bot/venv/bin:$PATH
+ENV PYTHONPATH=/
 
-RUN adduser -DH bot && chown -R bot /app
+RUN adduser -DH bot && chown -R bot /telegram_bot
 USER bot
 
-ADD ./requirements.txt /app/requirements.txt
+ADD ./requirements.txt /telegram_bot/requirements.txt
 RUN python -m venv venv && \
     pip install --no-cache-dir -r requirements.txt
 
-ADD ./ /app
+ADD ./ /telegram_bot
 CMD ["python", "main.py"]
