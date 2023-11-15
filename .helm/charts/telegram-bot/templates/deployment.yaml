@@ -22,7 +22,11 @@ spec:
           {{- end }}
           envFrom:
             - secretRef:
+                {{- if not .Values.tgApi.existingSecret }}
                 name: tg-bot-secret
+                {{- else }}
+                name: "{{ .Values.tgApi.existingSecret }}"
+                {{- end }}
           env:
             {{- with .Values.rabbitmq }}
             - name: "RMQHOST"

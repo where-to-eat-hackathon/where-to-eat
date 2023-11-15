@@ -6,6 +6,7 @@ image:
 
 tgApi:
   token: "${BOT_TOKEN}"
+  existingSecret: tg-bot-secret
 
 replicas: 1
 
