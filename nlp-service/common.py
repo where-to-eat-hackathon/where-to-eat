@@ -1,5 +1,7 @@
 # ENVIRONMENT VARIABLES.
 from dataclasses import dataclass
+from typing import Optional, List
+
 from dataclasses_json import dataclass_json
 
 RMQ_URL_ENVAR_KEY_NAME = "RMQ_URL"
@@ -26,10 +28,21 @@ RESPONSE_TEXT_KEY = "text"
 
 @dataclass_json
 @dataclass
+class GeocodedAddress:
+    """Text address transformed into coordinates."""
+
+    latitude: float
+    longitude: float
+
+
+@dataclass_json
+@dataclass
 class ServiceRequest:
-    """Response from service."""
+    """Request from service."""
 
     request_id: int
+    town: str
+    location: Optional[GeocodedAddress]
     message: str
 
 
@@ -38,7 +51,9 @@ class ServiceRequest:
 class ServiceResponseBody:
     address: str
     name: str
-    type: str
+    type: List[str]
+    rating: float
+    comment: str
 
 
 @dataclass_json
@@ -47,13 +62,4 @@ class ServiceResponse:
     """Response from service."""
 
     request_id: int
-    body: ServiceResponseBody
-
-
-@dataclass_json
-@dataclass
-class GeocodedAddress:
-    """Text address transformed into coordinates."""
-
-    latitude: float
-    longitude: float
+    body: List[ServiceResponseBody]

@@ -18,11 +18,12 @@ from common import (
     RMQ_OUTPUT_PORT_ENVAR_KEY_NAME,
     ServiceResponse,
     ServiceResponseBody,
-    ServiceRequest, GeocodedAddress,
+    ServiceRequest, GeocodedAddress, RESPONSE_NAME_KEY, RESPONSE_RATING_KEY, RESPONSE_TEXT_KEY,
 )
 from sentence_transformers import SentenceTransformer
 from typing import List, Optional
 from qdrant_client import QdrantClient
+from qdrant_client.http.models import Filter, FieldCondition, MatchText
 
 import http.client
 from urllib.parse import quote
@@ -101,7 +102,7 @@ class PythonService:
 
         qdrant_url = os.getenv(QDRANT_URL_ENVAR_KEY_NAME)
         qdrant_port = os.getenv(QDRANT_HTTP_PORT_ENVAR_KEY_NAME)
-        qdrant_gprc_port = os.getenv(QDRANT_GRPC_PORT_ENVAR_KEY_NAME)
+        qdrant_gprc_port = int(os.getenv(QDRANT_GRPC_PORT_ENVAR_KEY_NAME))
         qdrant_client = QdrantClient(
             host=qdrant_url,
             port=qdrant_port,
@@ -139,12 +140,23 @@ class PythonService:
             # Server doesn't found anything.
             return None
 
-    def search_db(self, message) -> List[ServiceResponseBody]:
+    def search_db(self, message, town_filter_name=None) -> List[ServiceResponseBody]:
         embedding = self.transformer_model.encode([message])[0]
+
+        if town_filter_name is None:
+            query_filter = None
+        else:
+            query_filter = Filter(must=[FieldCondition(
+                key=RESPONSE_ADDRESS_KEY,
+                match=MatchText(text=town_filter_name),
+            )])
+        print(self.qdrant_collection_name)
+        print(query_filter)
+        # print(embedding)
         search_result = self.qdrant_client.search(
             collection_name=self.qdrant_collection_name,
             query_vector=embedding,
-            query_filter=None,
+            query_filter=query_filter,
         )
 
         response = []
@@ -153,8 +165,10 @@ class PythonService:
             response.append(
                 ServiceResponseBody(
                     res_payload[RESPONSE_ADDRESS_KEY],
-                    "Some name",
+                    res_payload[RESPONSE_NAME_KEY],
                     res_payload[RESPONSE_TYPE_KEY],
+                    res_payload[RESPONSE_RATING_KEY],
+                    res_payload[RESPONSE_TEXT_KEY],
                 )
             )
         return response
@@ -190,4 +204,8 @@ class PythonService:
 
 if __name__ == "__main__":
     service = PythonService()
-    service.start_listening_input_query()
+    res = service.search_db("Я бы хотел поесть вкусной пиццы!", town_filter_name="Санкт-Петербург")
+    # res = service.search_db("Я бы хотел поесть вкусной пиццы!")
+    print("Printing db search result:")
+    for r in res:
+        print(r.address)
