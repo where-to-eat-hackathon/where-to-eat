@@ -5,7 +5,7 @@ import os
 from common import (
     INPUT_QUEUE_NAME_ENVAR_KEY_NAME,
     RMQ_URL_ENVAR_KEY_NAME,
-    RMQ_INPUT_PORT_ENVAR_KEY_NAME,
+    RMQ_PORT_ENVAR_KEY_NAME,
     RMQ_PASSWORD_ENVAR_KEY_NAME,
     RMQ_USERNAME_ENVAR_KEY_NAME,
     OUTPUT_QUEUE_NAME_ENVAR_KEY_NAME,
@@ -15,7 +15,6 @@ from common import (
     QDRANT_COLLECTION_NAME_ENVAR_KEY_NAME,
     RESPONSE_ADDRESS_KEY,
     RESPONSE_TYPE_KEY,
-    RMQ_OUTPUT_PORT_ENVAR_KEY_NAME,
     ServiceResponse,
     ServiceResponseBody,
     ServiceRequest, GeocodedAddress, RESPONSE_NAME_KEY, RESPONSE_RATING_KEY, RESPONSE_TEXT_KEY,
@@ -58,44 +57,40 @@ class PythonService:
         rmq_url = os.getenv(RMQ_URL_ENVAR_KEY_NAME)
         rmq_username = os.getenv(RMQ_USERNAME_ENVAR_KEY_NAME)
         rmq_password = os.getenv(RMQ_PASSWORD_ENVAR_KEY_NAME)
+        rmq_port = int(os.getenv(RMQ_PORT_ENVAR_KEY_NAME))
 
-        # Input queue configuration.
-        rmq_input_port = int(os.getenv(RMQ_INPUT_PORT_ENVAR_KEY_NAME))
-        input_connection = pika.BlockingConnection(
-            pika.ConnectionParameters(
-                host=rmq_url,
-                port=rmq_input_port,
-                credentials=pika.credentials.PlainCredentials(
-                    username=rmq_username, password=rmq_password
-                ),
-            )
-        )
-        rmq_input_channel = input_connection.channel()
-
-        input_queue_name = os.getenv(INPUT_QUEUE_NAME_ENVAR_KEY_NAME)
-        rmq_input_channel.queue_declare(queue=input_queue_name, durable=True)
-        rmq_input_channel.basic_qos(prefetch_count=1)
-        rmq_input_channel.basic_consume(
-            queue=input_queue_name, on_message_callback=self.handle_request_callback
-        )
-        self.rmq_input_channel = rmq_input_channel
-
-        # Output queue configuration.
-        rmq_output_port = int(os.getenv(RMQ_OUTPUT_PORT_ENVAR_KEY_NAME))
         output_connection = pika.BlockingConnection(
             pika.ConnectionParameters(
                 host=rmq_url,
-                port=rmq_output_port,
+                port=rmq_port,
                 credentials=pika.credentials.PlainCredentials(
                     username=rmq_username, password=rmq_password
                 ),
             )
         )
         rmq_output_channel = output_connection.channel()
-
         output_queue_name = os.getenv(OUTPUT_QUEUE_NAME_ENVAR_KEY_NAME)
         rmq_output_channel.queue_declare(queue=output_queue_name, durable=True)
         self.rmq_output_channel = rmq_output_channel
+
+        input_connection = pika.BlockingConnection(
+            pika.ConnectionParameters(
+                host=rmq_url,
+                port=rmq_port,
+                credentials=pika.credentials.PlainCredentials(
+                    username=rmq_username, password=rmq_password
+                ),
+            )
+        )
+        rmq_input_channel = input_connection.channel()
+        input_queue_name = os.getenv(INPUT_QUEUE_NAME_ENVAR_KEY_NAME)
+        rmq_input_channel.queue_declare(queue=input_queue_name, durable=True)
+        rmq_input_channel.basic_consume(
+            queue=input_queue_name,
+            on_message_callback=self.handle_request_callback,
+            auto_ack=True
+        )
+        self.rmq_input_channel = rmq_input_channel
 
         # ============ Quadrant configuration ==============
         self.transformer_model = SentenceTransformer(
@@ -163,7 +158,7 @@ class PythonService:
             res_payload = res.payload
 
             res_payload_address = res_payload[RESPONSE_ADDRESS_KEY]
-            address_geocode = self.transform_address_into_coordinates(res_payload_address)
+            # address_geocode = self.transform_address_into_coordinates(res_payload_address)
             response.append(
                 ServiceResponseBody(
                     res_payload_address,
@@ -171,7 +166,7 @@ class PythonService:
                     res_payload[RESPONSE_TYPE_KEY],
                     res_payload[RESPONSE_RATING_KEY],
                     res_payload[RESPONSE_TEXT_KEY],
-                    address_geocode
+                    None
                 )
             )
         return response
@@ -188,20 +183,15 @@ class PythonService:
             response, many=False
         )
 
+        output_queue_name = os.getenv(OUTPUT_QUEUE_NAME_ENVAR_KEY_NAME)
         self.rmq_output_channel.basic_publish(
-            exchange="",
-            routing_key=OUTPUT_QUEUE_NAME_ENVAR_KEY_NAME,
-            body=serialized_response,
-            properties=pika.BasicProperties(
-                delivery_mode=pika.spec.PERSISTENT_DELIVERY_MODE
-            ),
+            exchange='',
+            routing_key=output_queue_name,
+            body=serialized_response
         )
-        ch.basic_ack(delivery_tag=method.delivery_tag)
-        print(f"Successfully sent response: [{serialized_response}]")
 
     def start_listening_input_query(self):
         self.rmq_input_channel.start_consuming()
-
 
 if __name__ == "__main__":
     service = PythonService()

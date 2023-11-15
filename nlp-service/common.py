@@ -6,10 +6,9 @@ from dataclasses_json import dataclass_json
 
 RMQ_URL_ENVAR_KEY_NAME = "RMQ_URL"
 # Queue that accepts requests FROM Telegram bot.
-RMQ_INPUT_PORT_ENVAR_KEY_NAME = "RMQ_INPUT_PORT"
+RMQ_PORT_ENVAR_KEY_NAME = "RMQ_PORT"
 INPUT_QUEUE_NAME_ENVAR_KEY_NAME = "INPUT_QUEUE_NAME"
 # Queue that accepts requests FOR Telegram bot.
-RMQ_OUTPUT_PORT_ENVAR_KEY_NAME = "RMQ_INPUT_PORT"
 OUTPUT_QUEUE_NAME_ENVAR_KEY_NAME = "OUTPUT_QUEUE_NAME"
 RMQ_USERNAME_ENVAR_KEY_NAME = "RMQ_USERNAME"
 RMQ_PASSWORD_ENVAR_KEY_NAME = "RMQ_PASSWORD"
@@ -41,9 +40,9 @@ class ServiceRequest:
     """Request from service."""
 
     request_id: int
-    town: str
-    location: Optional[GeocodedAddress]
     message: str
+    town: Optional[str] = None
+    location: Optional[GeocodedAddress] = None
 
 
 @dataclass_json
@@ -54,7 +53,7 @@ class ServiceResponseBody:
     type: List[str]
     rating: float
     comment: str
-    geocode: Optional[GeocodedAddress]
+    geocode: Optional[GeocodedAddress] = None
 
 
 @dataclass_json
