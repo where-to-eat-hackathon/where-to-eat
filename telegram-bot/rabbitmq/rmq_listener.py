@@ -1,8 +1,10 @@
 import pika
 from typing import Callable
 
+
 def defaultCallback(ch, method, properties, body):
     print(f" [x] Received {body.decode(properties.content_encoding)}")
+
 
 class RMQListener:
     def __init__(

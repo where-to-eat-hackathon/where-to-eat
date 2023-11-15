@@ -1,5 +1,6 @@
 import pika
 
+
 class RMQSender:
     def __init__(
         self, 

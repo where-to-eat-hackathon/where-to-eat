@@ -9,29 +9,31 @@ import asyncio
 import threading
 from enum import Enum
 from time import time
-import os
+
 
 # TODO for tests
 from telegram_repository import message_repo
 
-__all__ = ["async_main", "sync_main", "send_async_answer", "send_sync_answer", "send_qwery_to_queue"]
+__all__ = ["async_main", "sync_main", "send_async_answer",
+           "send_sync_answer", "send_qwery_to_queue", "bot_init"]
 
 
-answer_delay_sec = 12
-if "ANSWER_DELAY_SEC" in os.environ:
-    answer_delay_sec = int(os.getenv("ANSWER_DELAY_SEC"))
-
-BOT_TOKEN = ""
-if "BOT_TOKEN" in os.environ:
-    BOT_TOKEN = os.getenv("BOT_TOKEN")
-
-BOT_LINK = ""
-if "BOT_LINK" in os.environ:
-    BOT_LINK = os.getenv("BOT_LINK")
+class BotConsts:
+    answer_delay_sec = 12
+    BOT_TOKEN = ""
+    BOT_LINK = ""
+    bot = None
+    dp = None
+    sender = None
 
 
-bot = Bot(token=BOT_TOKEN)
-dp = Dispatcher()
+def bot_init(config, sender_obj):
+    BotConsts.answer_delay_sec = config.answer_delay_sec
+    BotConsts.BOT_TOKEN = config.BOT_TOKEN
+    BotConsts.BOT_LINK = config.BOT_LINK
+    BotConsts.bot = Bot(token=BotConsts.BOT_TOKEN)
+    BotConsts.dp = Dispatcher()
+    BotConsts.sender = sender_obj
 
 
 class UStates(Enum):
@@ -48,7 +50,7 @@ income_st = "income_msg"
 time_st = "time_stamp"
 
 
-@dp.message(Command("start"))
+@BotConsts.dp.message(Command("start"))
 async def process_start_command(message: types.Message, state: FSMContext):
     await state.set_state(UserState.income_msg)
     await state.update_data(income_msg=UStates.AVAILABLE)
@@ -57,23 +59,23 @@ async def process_start_command(message: types.Message, state: FSMContext):
     await message.answer(f"Привет!\nНапиши мне что-нибудь! {message.text}")
 
 
-@dp.message(Command("ans"))
+@BotConsts.dp.message(Command("ans"))
 async def answer_command(message: types.Message):
     try:
         id_user = int(message.text.split()[1])
     except ValueError:
-        await bot.send_message(message.from_user.id, "id not correct")
+        await BotConsts.bot.send_message(message.from_user.id, "id not correct")
         return
 
     answer = ["answer is ", str(message_repo.get(id_user))]
     try:
         await send_async_answer(id_user, answer)
     except TelegramBadRequest:
-        await bot.send_message(message.from_user.id, "id not correct")
+        await BotConsts.bot.send_message(message.from_user.id, "id not correct")
         return
 
 
-@dp.message()
+@BotConsts.dp.message()
 async def qwery_message(msg: types.Message, state: FSMContext):
     async def accept_qwery():
         id_user = msg.from_user.id
@@ -85,7 +87,7 @@ async def qwery_message(msg: types.Message, state: FSMContext):
 
     data = await state.get_data()
     if income_st not in data:
-        await bot.send_message(msg.from_user.id, f"something gone wrong\nNo state for you yet")
+        await BotConsts.bot.send_message(msg.from_user.id, f"something gone wrong\nNo state for you yet")
         await state.set_state(UserState.income_msg)
         await state.update_data(income_msg=UStates.AVAILABLE)
         await state.set_state(UserState.time_stamp)
@@ -98,23 +100,24 @@ async def qwery_message(msg: types.Message, state: FSMContext):
             await state.set_state(UserState.time_stamp)
             await state.update_data(time_stamp=time())
 
-        if time() - data[time_st] > answer_delay_sec:
-            await bot.send_message(msg.from_user.id, "Your qwery got timeout\nNew qwery accepted")
+        if time() - data[time_st] > BotConsts.answer_delay_sec:
+            await BotConsts.bot.send_message(msg.from_user.id, "Your qwery got timeout\nNew qwery accepted")
             await accept_qwery()
         else:
-            await bot.send_message(msg.from_user.id, f"wait for your previous answer or for "
-                                                     f"{answer_delay_sec - (time() - data[time_st])} sec")
+            await BotConsts.bot.send_message(msg.from_user.id, f"wait for your previous answer or for "
+                                                     f"{BotConsts.answer_delay_sec - (time() - data[time_st])} sec")
 
 
 def send_qwery_to_queue(id_user, query):
     # TODO call rabbitmq lib funcs
-    message_repo.put(id_user, query)
+    BotConsts.sender.send_message(id_user, query)
+    # message_repo.put(id_user, query)
 
 
 async def send_async_answer(id_user: int, answer: List[str]):
     text = '\n'.join(answer)
-    await bot.send_message(id_user, text)
-    context_state = FSMContext(storage=dp.storage, key=StorageKey(bot.id, id_user, id_user))
+    await BotConsts.bot.send_message(id_user, text)
+    context_state = FSMContext(storage=BotConsts.dp.storage, key=StorageKey(BotConsts.bot.id, id_user, id_user))
     a = await context_state.get_data()
     await context_state.update_data(income_msg=UStates.AVAILABLE)
 
@@ -125,12 +128,13 @@ def send_sync_answer(id_user: int, answer: List[str]):
 
 
 async def async_main():
-    await dp.start_polling(bot)
+    await BotConsts.dp.start_polling(BotConsts.bot)
 
 
 def sync_main():
     asyncio.run(async_main())
 
 
-if __name__ == '__main__':
-    sync_main()
+# if __name__ == '__main__':
+#     # bot_init(config, None)
+#     sync_main()

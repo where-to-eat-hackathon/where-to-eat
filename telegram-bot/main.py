@@ -1,52 +1,26 @@
-import os
-import sys
-from rabbitmq import RMQListener, RMQSender
+from rabbitmq_tools import get_sender, run_listener
+from tg_bot_tools import start_sync_bot, send_sync_answer
+import threading
+from time import sleep
+
 
 def main():
-    rmq_host = os.getenv('RMQHOST')
-    if rmq_host is None:
-        raise Exception('rmq host is not provided')
-    
-    rmq_port = os.getenv('RMQPORT')
-    if rmq_port is None:
-        raise Exception('rmq port is not provided')
-    
-    rmq_user = os.getenv('RMQUSER')
-    if rmq_user is None:
-        raise Exception('rmq user is not provided')
-    
-    rmq_password = os.getenv('RMQPASSWORD')
-    if rmq_password is None:
-        raise Exception('rmq password is not provided')
+    sender = get_sender()
+    start_sync_bot(sender)
+    # tg_bot_task = threading.Thread(target=start_sync_bot, args=(sender,))
 
-    rmq_place_description_queue = os.getenv('RMQINQUEUE') #place_description
-    if rmq_place_description_queue is None:
-        raise Exception('rmq place_description queue  is not provided')
-    
-    rmq_place_suggestion_queue = os.getenv('RMQOUTQUEUE') #place_suggestion
-    if rmq_place_suggestion_queue is None:
-        raise Exception('rmq place_suggestion queue  is not provided')
-
-    rmq_sender = RMQSender(
-        queue=rmq_place_description_queue,
-        host=rmq_host,
-        port=rmq_port,
-        user=rmq_user,
-        password=rmq_password,
-    )
-
-    rmq_listener = RMQListener(
-        queue=rmq_place_suggestion_queue,
-        host=rmq_host,
-        port=rmq_port,
-        user=rmq_user,
-        password=rmq_password,
-    )
+    mq_util_task = threading.Thread(target=run_listener, args=(send_sync_answer,))
+    mq_util_task.start()
+    sleep(7)
+    # tg_bot_task.start()
 
     try:
-        rmq_listener.listen()
+        start_sync_bot(sender)
     except KeyboardInterrupt:
-        sys.exit(0)
+        print('prepare to end')
+        sender.close_connection()
+        print('ready to finish')
+
 
 if __name__ == '__main__':
     main()

@@ -1,2 +1,3 @@
-from rabbitmq.rmq_listener import RMQListener
-from rabbitmq.rmq_sender import RMQSender
+from rmq_listener import RMQListener, defaultCallback
+from rmq_sender import RMQSender
+
