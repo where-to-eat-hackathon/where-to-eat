@@ -6,7 +6,7 @@ metadata:
     app: tg-bot
 spec:
   selector:
-    matchLables:
+    matchLabels:
       app: tg-bot
   replicas: {{ .Values.replicas }}
 
