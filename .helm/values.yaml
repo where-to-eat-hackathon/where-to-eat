@@ -41,3 +41,5 @@ nlp-service:
     limits:
       cpu: 1
       memory: "2048Mi"
+  qdrant:
+    collectionName: "reviews-MiniLM-L12-L2"
