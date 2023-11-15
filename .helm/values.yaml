@@ -46,7 +46,7 @@ nlp-service:
 
 telegram-bot:
   image:
-    tag: tg-merge_7e9add
+    tag: tg-merge_cc91f4
   resources:
     requests:
       cpu: 100m
