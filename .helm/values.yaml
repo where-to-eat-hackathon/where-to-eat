@@ -41,3 +41,18 @@ nlp-service:
     limits:
       cpu: 1
       memory: "2048Mi"
+  qdrant:
+    collectionName: "reviews-MiniLM-L12-L2"
+
+telegram-bot:
+  image:
+    tag: tg-merge_cc91f4
+  resources:
+    requests:
+      cpu: 100m
+      memory: "256Mi"
+    limits:
+      cpu: 250m
+      memory: "384Mi"
+  tgApi:
+    token: "${BOT_TOKEN}"

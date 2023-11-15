@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: telegram-bot
+  labels:
+    app: tg-bot
+spec:
+  selector:
+    matchLabels:
+      app: tg-bot
+  replicas: {{ .Values.replicas }}
+
+  template:
+    metadata:
+      labels:
+        app: tg-bot
+    spec:
+      containers:
+        - name: bot-server
+          {{- with .Values.image }}
+          image: {{ .registry }}/{{ .project }}:{{ .tag }}
+          {{- end }}
+          envFrom:
+            - secretRef:
+                name: tg-bot-secret
+          env:
+            {{- with .Values.rabbitmq }}
+            - name: "RMQHOST"
+              value: {{ tpl .url $ }}
+            - name: "RMQPORT"
+              value: "{{ .port }}"
+            - name: "RMQINQUEUE"
+              value: {{ .inputQueueName }}
+            - name: "RMQOUTQUEUE"
+              value: {{ .outputQueueName }}
+            {{- with .auth }}
+            - name: "RMQUSER"
+              {{- if .username }}
+              value: {{ .username }}
+              {{- else }}
+              valueFrom:
+                secretKeyRef:
+                  key: {{ tpl .secret.userKey $ }}
+                  name: {{ tpl .secret.secretName $ }}
+              {{- end }}
+            - name: "RMQPASSWORD"
+              valueFrom:
+                secretKeyRef:
+                  key: {{ tpl .secret.passwordKey $ }}
+                  name: {{ tpl .secret.secretName $ }}
+            {{- end }}
+            {{- end }}
+          {{- if .Values.resources }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- end }}

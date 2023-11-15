@@ -3,3 +3,5 @@
 **/.virtual_documents
 **/local_cache
 **/.ruff_cache
+venv
+__pycache__
