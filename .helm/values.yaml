@@ -32,7 +32,7 @@ qdrant:
 
 nlp-service:
   image:
-    tag: 0.1.0
+    tag: python-service_7cc96d
   resources:
     requests:
       cpu: 500m
