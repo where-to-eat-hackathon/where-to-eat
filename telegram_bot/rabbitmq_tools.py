@@ -1,6 +1,6 @@
 import config
 import sys
-from .rabbitmq import RMQListener, RMQSender, defaultCallback
+from rabbitmq import RMQListener, RMQSender, defaultCallback
 
 
 def run_listener(bot_gateway=defaultCallback):

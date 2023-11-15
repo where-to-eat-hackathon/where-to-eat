@@ -1,3 +1,4 @@
+import json
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters.command import Command
 from aiogram.fsm.state import State, StatesGroup
@@ -10,29 +11,27 @@ import threading
 from enum import Enum
 from time import time
 
+from telegram_bot import config
+
 
 # TODO for tests
-from telegram_repository import message_repo
+from .telegram_repository import message_repo
 
 __all__ = ["async_main", "sync_main", "send_async_answer",
-           "send_sync_answer", "send_qwery_to_queue", "bot_init"]
+           "send_sync_answer", "send_qwery_to_queue", "start_sync_bot"]
 
 
 class BotConsts:
-    answer_delay_sec = 12
-    BOT_TOKEN = ""
-    BOT_LINK = ""
-    bot = None
-    dp = None
+    answer_delay_sec = config.answer_delay_sec
+    BOT_TOKEN = config.BOT_TOKEN
+    BOT_LINK = config.BOT_LINK
+    bot = Bot(token=BOT_TOKEN)
+    dp = Dispatcher()
     sender = None
+    LOOP = asyncio.new_event_loop()
 
 
-def bot_init(config, sender_obj):
-    BotConsts.answer_delay_sec = config.answer_delay_sec
-    BotConsts.BOT_TOKEN = config.BOT_TOKEN
-    BotConsts.BOT_LINK = config.BOT_LINK
-    BotConsts.bot = Bot(token=BotConsts.BOT_TOKEN)
-    BotConsts.dp = Dispatcher()
+def bot_init(sender_obj):
     BotConsts.sender = sender_obj
 
 
@@ -59,20 +58,20 @@ async def process_start_command(message: types.Message, state: FSMContext):
     await message.answer(f"Привет!\nНапиши мне что-нибудь! {message.text}")
 
 
-@BotConsts.dp.message(Command("ans"))
-async def answer_command(message: types.Message):
-    try:
-        id_user = int(message.text.split()[1])
-    except ValueError:
-        await BotConsts.bot.send_message(message.from_user.id, "id not correct")
-        return
-
-    answer = ["answer is ", str(message_repo.get(id_user))]
-    try:
-        await send_async_answer(id_user, answer)
-    except TelegramBadRequest:
-        await BotConsts.bot.send_message(message.from_user.id, "id not correct")
-        return
+# @BotConsts.dp.message(Command("ans"))
+# async def answer_command(message: types.Message):
+#     try:
+#         id_user = int(message.text.split()[1])
+#     except ValueError | IndexError:
+#         await BotConsts.bot.send_message(message.from_user.id, "id not correct")
+#         return
+#
+#     answer = ["answer is ", str(message_repo.get(id_user))]
+#     try:
+#         await send_async_answer(id_user, answer)
+#     except TelegramBadRequest:
+#         await BotConsts.bot.send_message(message.from_user.id, "id not correct")
+#         return
 
 
 @BotConsts.dp.message()
@@ -122,9 +121,23 @@ async def send_async_answer(id_user: int, answer: List[str]):
     await context_state.update_data(income_msg=UStates.AVAILABLE)
 
 
-def send_sync_answer(id_user: int, answer: List[str]):
-    coroutine = send_async_answer(id_user, answer)
-    asyncio.get_event_loop().create_task(coroutine)
+def send_sync_answer(ch, method, properties, body):
+    if properties.content_encoding is not None:
+        str_result = body.decode(properties.content_encoding)
+    else:
+        str_result = body.decode()
+    str_result = str_result.replace("'", '"')
+    json_obj = json.loads(str_result)
+    id_user = json_obj['request_id']
+    answer = json_obj['message']
+    if isinstance(answer, str):
+        answer = [answer]
+    BotConsts.LOOP.create_task(send_async_answer(id_user, answer))
+
+
+# def send_sync_answer(id_user: int, answer: List[str]):
+#     coroutine = send_async_answer(id_user, answer)
+#     asyncio.get_event_loop().create_task(coroutine)
 
 
 async def async_main():
@@ -132,7 +145,13 @@ async def async_main():
 
 
 def sync_main():
-    asyncio.run(async_main())
+    BotConsts.LOOP.run_until_complete(async_main())
+    # asyncio.run(async_main())
+
+
+def start_sync_bot(sender):
+    bot_init(sender)
+    sync_main()
 
 
 # if __name__ == '__main__':
