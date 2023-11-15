@@ -1,4 +1,5 @@
 import pika
+import json
 
 
 class RMQSender:
@@ -23,7 +24,7 @@ class RMQSender:
         message = {'request_id': request_id, 'message': msg}
         self.channel.basic_publish(exchange='',
                                    routing_key=self.queue,
-                                   body=str(message),
+                                   body=json.dumps(message),
                                    properties=pika.BasicProperties(
                                        content_encoding='utf-8',
                                        delivery_mode=1,
