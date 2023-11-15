@@ -6,7 +6,7 @@ on:
     branches: ["*"]
     paths:
       - nlp-service/**
-      - telegram-bot/**
+      - telegram_bot/**
 jobs:
   generate-matrix:
     name: "Build images for modified components"
@@ -19,7 +19,7 @@ jobs:
         id: detect
         uses: tchupp/actions-detect-directory-changes@v1
         with:
-          included-paths: "nlp-service,telegram-bot"
+          included-paths: "nlp-service,telegram_bot"
 
   build-images:
     name: Build "${{ matrix.component }}"
