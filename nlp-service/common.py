@@ -41,7 +41,7 @@ class ServiceRequest:
     """Request from service."""
 
     request_id: int
-    town: str
+    town: Optional[str]
     location: Optional[GeocodedAddress]
     message: str
 
