@@ -24,9 +24,7 @@ spec:
             {{- with .Values.rabbitmq }}
             - name: "RMQ_URL"
               value: {{ tpl .url $ }}
-            - name: "RMQ_INPUT_PORT"
-              value: "{{ .port }}"
-            - name: "RMQ_OUTPUT_PORT"
+            - name: "RMQ_PORT"
               value: "{{ .port }}"
             - name: "INPUT_QUEUE_NAME"
               value: {{ .inputQueueName }}
