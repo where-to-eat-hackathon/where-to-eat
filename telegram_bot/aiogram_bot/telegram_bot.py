@@ -111,14 +111,16 @@ def send_qwery_to_queue(id_user, query):
 
 async def send_async_answer(id_user: int, answer_body):
     text = "Вот подходящие вам варианты:\n"
+    await BotConsts.bot.send_message(id_user, text)
     for res in answer_body:
+        text = ""
         name = res["name"]
         address = res["address"]
         rating = str(res["rating"])
         text += f"{name} (адресс = {address}, рейтинг = {rating})\n"
         text += f"Комментарий: {text}\n"
         text += "\n"
-    await BotConsts.bot.send_message(id_user, text)
+        await BotConsts.bot.send_message(id_user, text)
     context_state = FSMContext(storage=BotConsts.dp.storage, key=StorageKey(BotConsts.bot.id, id_user, id_user))
     a = await context_state.get_data()
     await context_state.update_data(income_msg=UStates.AVAILABLE)
@@ -130,7 +132,6 @@ def send_sync_answer(ch, method, properties, body):
         str_result = body.decode(properties.content_encoding)
     else:
         str_result = body.decode()
-    str_result = str_result.replace("'", '"')
     json_obj = json.loads(str_result)
     id_user = json_obj['request_id']
     answer_body = json_obj['body']
