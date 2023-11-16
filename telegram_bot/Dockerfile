@@ -1,6 +1,7 @@
 FROM docker.io/library/python:3.11-alpine
 
 WORKDIR /telegram_bot
+
 ENV PATH=/telegram_bot/venv/bin:$PATH
 ENV PYTHONPATH=/
 
