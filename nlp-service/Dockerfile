@@ -1,5 +1,4 @@
 FROM docker.io/mambaorg/micromamba:1.5.1-alpine
-
 WORKDIR /nlp-service
 
 USER root
