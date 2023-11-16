@@ -131,7 +131,7 @@ async def send_async_answer(id_user: int, answer_body):
         rating = str(res["rating"])
         comment = res["text"]
         geo = res["geocode"]
-        text += f"{name} \n 📍 {address} \t {rating}/5)\n"
+        text += f"{name} \n📍 {address} \t {rating}/5\n"
         text += f"{comment}\n"
         await BotWorker.bot.send_message(id_user, text)
         if geo is None:
