@@ -17,6 +17,11 @@ class RMQSender:
         self.retries = 0
         self.max_retries = 5
         self.queue = queue
+        self.host = host
+        self.port = port
+        self.user = user
+        self.password = password
+
         self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(
                 host=host,
@@ -50,6 +55,15 @@ class RMQSender:
         except:
             print(f"exception while message publishing")
             self.retries += 1
+            self.connection = pika.BlockingConnection(
+                pika.ConnectionParameters(
+                    host=self.host,
+                    port=int(self.port),
+                    credentials=pika.PlainCredentials(username=self.user,
+                                                      password=self.password),
+                ))
+            self.channel = self.connection.channel()
+            self.channel.queue_declare(queue=self.queue, durable=True)
             self.send_message(request_id, msg, town)
         print(f"Sent message to the input queue: [{msg}]")
         print(f"Input queue name: [{self.queue}]")

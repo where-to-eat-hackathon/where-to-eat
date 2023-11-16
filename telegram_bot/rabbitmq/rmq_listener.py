@@ -23,6 +23,11 @@ class RMQListener:
         self.allowed_time_interval = 10
         self.queue = queue
         self.callback = callback
+        self.host = host
+        self.port = port
+        self.user = user
+        self.password = password
+
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(
             host=host, 
             port=int(port),
@@ -47,3 +52,11 @@ class RMQListener:
                     self.retries += 1
                 else:
                     self.retries = 0
+                self.connection = pika.BlockingConnection(pika.ConnectionParameters(
+                    host=self.host,
+                    port=int(self.port),
+                    credentials=pika.PlainCredentials(username=self.user, password=self.password),
+                ))
+                self.channel = self.connection.channel()
+                self.channel.queue_declare(queue=self.queue, durable=True)
+                self.channel.basic_consume(queue=self.queue, on_message_callback=self.callback, auto_ack=True)
