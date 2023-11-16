@@ -71,6 +71,8 @@ class PythonService:
                 credentials=pika.credentials.PlainCredentials(
                     username=self.rmq_username, password=self.rmq_password
                 ),
+                heartbeat=0,
+                blocked_connection_timeout=60
             )
         )
         rmq_output_channel = output_connection.channel()
@@ -85,6 +87,8 @@ class PythonService:
                 credentials=pika.credentials.PlainCredentials(
                     username=self.rmq_username, password=self.rmq_password
                 ),
+                heartbeat=0,
+                blocked_connection_timeout=60
             )
         )
         rmq_input_channel = input_connection.channel()
@@ -235,7 +239,7 @@ class PythonService:
             try:
                 self.rmq_input_channel.start_consuming()
             except:
-                print(f"error while listening")
+                print("error while listening")
                 if time() - self.last_try_time > self.allowed_time_interval:
                     self.retries += 1
                 else:
