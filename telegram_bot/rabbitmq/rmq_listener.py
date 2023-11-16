@@ -32,6 +32,8 @@ class RMQListener:
             host=host, 
             port=int(port),
             credentials=pika.PlainCredentials(username=user, password=password),
+            heartbeat=0,
+            blocked_connection_timeout=60,
         ))
         self.channel = self.connection.channel()
         self.channel.queue_declare(queue=self.queue, durable=True)
@@ -47,7 +49,7 @@ class RMQListener:
             try:
                 self.channel.start_consuming()
             except:
-                print(f"error while listening")
+                print("error while listening")
                 if time() - self.last_try_time > self.allowed_time_interval:
                     self.retries += 1
                 else:

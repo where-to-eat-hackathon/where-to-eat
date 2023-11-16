@@ -30,6 +30,8 @@ class RMQSender:
                 port=int(port),
                 credentials=pika.PlainCredentials(username=user,
                                                   password=password),
+                heartbeat=0,
+                blocked_connection_timeout=60
             ))
         self.channel = self.connection.channel()
         self.channel.queue_declare(queue=queue, durable=True)
@@ -40,7 +42,7 @@ class RMQSender:
         self.lock.acquire()
         
         if self.retries > self.max_retries:
-            print(f'too much fails')
+            print('too much fails')
             self.channel.basic_publish(exchange='',
                                        routing_key=self.queue,
                                        body=json.dumps(message),
@@ -61,7 +63,7 @@ class RMQSender:
                                            delivery_mode=1,
                                        ))
         except:
-            print(f"exception while message publishing")
+            print("exception while message publishing")
             self.retries += 1
             self.connection = pika.BlockingConnection(
                 pika.ConnectionParameters(
