@@ -36,7 +36,7 @@ qdrant:
 nlp-service:
   image:
     project: where-to-eat-hackathon/where-to-eat/nlp-service
-    tag: main_d01ffd
+    tag: main_98f9c1
   resources:
     requests:
       cpu: 300m
@@ -49,7 +49,7 @@ nlp-service:
 
 telegram-bot:
   image:
-    tag: main_b77d7d
+    tag: main_76f720
   resources:
     requests:
       cpu: 100m
