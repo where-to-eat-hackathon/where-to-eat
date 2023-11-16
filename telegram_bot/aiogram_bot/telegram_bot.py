@@ -13,7 +13,7 @@ from time import time
 # TODO for tests
 
 __all__ = ["async_main", "sync_main", "send_async_answer",
-           "send_sync_answer", "send_qwery_to_queue", "start_sync_bot"]
+           "send_sync_answer", "send_query_to_queue", "start_sync_bot"]
 
 import config
 
@@ -51,31 +51,15 @@ async def process_start_command(message: types.Message, state: FSMContext):
     await state.update_data(income_msg=UStates.AVAILABLE)
     await state.set_state(UserState.time_stamp)
 
-    await message.answer(f"Привет!\nНапиши мне что-нибудь! {message.text}")
-
-
-# @BotConsts.dp.message(Command("ans"))
-# async def answer_command(message: types.Message):
-#     try:
-#         id_user = int(message.text.split()[1])
-#     except ValueError | IndexError:
-#         await BotConsts.bot.send_message(message.from_user.id, "id not correct")
-#         return
-#
-#     answer = ["answer is ", str(message_repo.get(id_user))]
-#     try:
-#         await send_async_answer(id_user, answer)
-#     except TelegramBadRequest:
-#         await BotConsts.bot.send_message(message.from_user.id, "id not correct")
-#         return
+    await message.answer(f"Привет!\nСкажи, пожалуйста, из какого ты города? {message.text}")
 
 
 @BotConsts.dp.message()
-async def qwery_message(msg: types.Message, state: FSMContext):
+async def query_message(msg: types.Message, state: FSMContext):
     async def accept_qwery():
         id_user = msg.from_user.id
         query = msg.text
-        append_task = threading.Thread(target=send_qwery_to_queue, args=(id_user, query,))
+        append_task = threading.Thread(target=send_query_to_queue, args=(id_user, query,))
         append_task.start()
         await state.update_data(income_msg=UStates.WAITING)
         await state.update_data(time_stamp=time())
@@ -103,10 +87,8 @@ async def qwery_message(msg: types.Message, state: FSMContext):
                                                      f"{BotConsts.answer_delay_sec - (time() - data[time_st])} sec")
 
 
-def send_qwery_to_queue(id_user, query):
-    # TODO call rabbitmq lib funcs
+def send_query_to_queue(id_user, query):
     BotConsts.sender.send_message(id_user, query)
-    # message_repo.put(id_user, query)
 
 
 async def send_async_answer(id_user: int, answer_body):
@@ -127,6 +109,7 @@ async def send_async_answer(id_user: int, answer_body):
 
 
 def send_sync_answer(ch, method, properties, body):
+    """Function called to read service responses from output queue."""
     print("Read message from the output queue")
     if properties.content_encoding is not None:
         str_result = body.decode(properties.content_encoding)
@@ -138,25 +121,14 @@ def send_sync_answer(ch, method, properties, body):
     BotConsts.LOOP.create_task(send_async_answer(id_user, answer_body))
 
 
-# def send_sync_answer(id_user: int, answer: List[str]):
-#     coroutine = send_async_answer(id_user, answer)
-#     asyncio.get_event_loop().create_task(coroutine)
-
-
 async def async_main():
     await BotConsts.dp.start_polling(BotConsts.bot)
 
 
 def sync_main():
     BotConsts.LOOP.run_until_complete(async_main())
-    # asyncio.run(async_main())
 
 
 def start_sync_bot(sender):
     bot_init(sender)
     sync_main()
-
-
-# if __name__ == '__main__':
-#     # bot_init(config, None)
-#     sync_main()
