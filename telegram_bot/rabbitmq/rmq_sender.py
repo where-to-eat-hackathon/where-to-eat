@@ -24,6 +24,7 @@ class RMQSender:
         self.channel.queue_declare(queue=queue, durable=True)
 
     def send_message(self, request_id: int, msg: str) -> None:
+        print("Sent message to the input queue")
         message = {'request_id': request_id, 'message': msg}
         self.channel.basic_publish(exchange='',
                                    routing_key=self.queue,

@@ -10,13 +10,12 @@ import threading
 from enum import Enum
 from time import time
 
-from telegram_bot import config
-
-
 # TODO for tests
 
 __all__ = ["async_main", "sync_main", "send_async_answer",
            "send_sync_answer", "send_qwery_to_queue", "start_sync_bot"]
+
+import config
 
 
 class BotConsts:
@@ -110,8 +109,16 @@ def send_qwery_to_queue(id_user, query):
     # message_repo.put(id_user, query)
 
 
-async def send_async_answer(id_user: int, answer: List[str]):
-    text = '\n'.join(answer)
+async def send_async_answer(id_user: int, answer_body):
+    text = "Вот подходящие вам варианты:\n"
+    if len(answer_body) >= 1:
+        res = answer_body[0]
+        name = res["name"]
+        address = res["address"]
+        rating = str(res["rating"])
+        text += f"{name} (адресс = {address}, рейтинг = {rating})\n"
+        text += f"Комментарий: {text}\n"
+        text += "\n"
     await BotConsts.bot.send_message(id_user, text)
     context_state = FSMContext(storage=BotConsts.dp.storage, key=StorageKey(BotConsts.bot.id, id_user, id_user))
     a = await context_state.get_data()
@@ -119,6 +126,7 @@ async def send_async_answer(id_user: int, answer: List[str]):
 
 
 def send_sync_answer(ch, method, properties, body):
+    print("Read message from the output queue")
     if properties.content_encoding is not None:
         str_result = body.decode(properties.content_encoding)
     else:
@@ -126,10 +134,8 @@ def send_sync_answer(ch, method, properties, body):
     str_result = str_result.replace("'", '"')
     json_obj = json.loads(str_result)
     id_user = json_obj['request_id']
-    answer = json_obj['message']
-    if isinstance(answer, str):
-        answer = [answer]
-    BotConsts.LOOP.create_task(send_async_answer(id_user, answer))
+    answer_body = json_obj['body']
+    BotConsts.LOOP.create_task(send_async_answer(id_user, answer_body))
 
 
 # def send_sync_answer(id_user: int, answer: List[str]):

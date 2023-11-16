@@ -1,5 +1,5 @@
 from rabbitmq_tools import get_sender, run_listener
-from aiogram_bot import start_sync_bot, send_sync_answer
+from aiogram_bot.telegram_bot import start_sync_bot, send_sync_answer
 import threading
 from time import sleep
 
