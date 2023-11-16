@@ -159,7 +159,11 @@ class PythonService:
             res_payload = res.payload
 
             res_payload_address = res_payload[RESPONSE_ADDRESS_KEY]
-            # address_geocode = self.transform_address_into_coordinates(res_payload_address)
+            try:
+                address_geocode = self.transform_address_into_coordinates(res_payload_address)
+            except Exception as e:
+                address_geocode = None
+                print(f"Failed to geocode location. Raised error {str(e)}")
             response.append(
                 ServiceResponseBody(
                     res_payload_address,
@@ -167,7 +171,7 @@ class PythonService:
                     res_payload[RESPONSE_TYPE_KEY],
                     res_payload[RESPONSE_RATING_KEY],
                     res_payload[RESPONSE_TEXT_KEY],
-                    None
+                    address_geocode
                 )
             )
         return response
@@ -176,7 +180,7 @@ class PythonService:
         request = ServiceRequest(**json.loads(body))
         print(f"Successfully get message: [{request}]")
 
-        quadrant_response = self.search_db(request.message)
+        quadrant_response = self.search_db(request.message, request.town)
         # if request.location is not None:
         #     response_dataclasses.sort(key=lambda res: find_geocode_distance(request.location, res.))
         response = ServiceResponse(request.request_id, quadrant_response)
@@ -193,6 +197,7 @@ class PythonService:
 
     def start_listening_input_query(self):
         self.rmq_input_channel.start_consuming()
+
 
 if __name__ == "__main__":
     service = PythonService()
