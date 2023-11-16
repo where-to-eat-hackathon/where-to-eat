@@ -8,6 +8,9 @@ rabbitmq:
   #   username: "${RMQ_USERNAME}"
   #   password: "${RMQ_PASSWORD}"
 
+  extraConfiguration: |
+    heartbeat = 0
+
   resources:
     requests:
       cpu: 300m
