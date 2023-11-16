@@ -135,6 +135,7 @@ async def send_async_answer(id_user: int, answer_body):
         await BotWorker.bot.send_message(id_user, text)
         if geo is None:
             continue
+        #Maybe should be commented
         geo = json.loads(geo)
         latitude = geo['latitude']
         longitude = geo['longitude']
