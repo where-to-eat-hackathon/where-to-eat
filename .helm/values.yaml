@@ -46,7 +46,7 @@ nlp-service:
 
 telegram-bot:
   image:
-    tag: main_793fcd
+    tag: main_b77d7d
   resources:
     requests:
       cpu: 100m
