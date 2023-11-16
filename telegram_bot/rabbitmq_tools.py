@@ -29,7 +29,3 @@ def get_sender():
         password=config.rmq_password,
     )
     return rmq_sender
-
-
-if __name__ == '__main__':
-    run_listener()
