@@ -1,3 +1,5 @@
+from typing import Optional
+
 import pika
 import json
 
@@ -23,8 +25,8 @@ class RMQSender:
         self.channel = self.connection.channel()
         self.channel.queue_declare(queue=queue, durable=True)
 
-    def send_message(self, request_id: int, msg: str) -> None:
-        message = {'request_id': request_id, 'message': msg}
+    def send_message(self, request_id: int, msg: str, town: Optional[str]) -> None:
+        message = {'request_id': request_id, 'message': msg, "town": town}
         self.channel.basic_publish(exchange='',
                                    routing_key=self.queue,
                                    body=json.dumps(message),
@@ -32,6 +34,8 @@ class RMQSender:
                                        content_encoding='utf-8',
                                        delivery_mode=1,
                                    ))
+        print(f"Sent message to the input queue: [{msg}]")
+        print(f"Input queue name: [{self.queue}]")
 
     def close_connection(self) -> None:
         self.connection.close()

@@ -20,12 +20,12 @@ if rmq_password is None:
     rmq_password = "guest"
     raise Exception('rmq password is not provided')
 
-rmq_place_description_queue = os.getenv('RMQINQUEUE')  # place_description
+rmq_place_description_queue = os.getenv('RMQINQUEUE')
 if rmq_place_description_queue is None:
     rmq_place_description_queue = 'inq'
     raise Exception('rmq place_description queue  is not provided')
 
-rmq_place_suggestion_queue = os.getenv('RMQOUTQUEUE')  # place_suggestion
+rmq_place_suggestion_queue = os.getenv('RMQOUTQUEUE')
 if rmq_place_suggestion_queue is None:
     rmq_place_suggestion_queue = 'outq'
     raise Exception('rmq place_suggestion queue  is not provided')
