@@ -151,6 +151,7 @@ class PythonService:
             collection_name=self.qdrant_collection_name,
             query_vector=embedding,
             query_filter=query_filter,
+            limit=5
         )
 
         response = []

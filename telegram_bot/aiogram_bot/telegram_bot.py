@@ -111,8 +111,7 @@ def send_qwery_to_queue(id_user, query):
 
 async def send_async_answer(id_user: int, answer_body):
     text = "Вот подходящие вам варианты:\n"
-    if len(answer_body) >= 1:
-        res = answer_body[0]
+    for res in answer_body:
         name = res["name"]
         address = res["address"]
         rating = str(res["rating"])
