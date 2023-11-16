@@ -1,5 +1,5 @@
 from typing import Optional
-
+import threading
 import pika
 import json
 
@@ -22,6 +22,8 @@ class RMQSender:
         self.user = user
         self.password = password
 
+        self.lock = threading.Lock()
+
         self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(
                 host=host,
@@ -34,6 +36,9 @@ class RMQSender:
 
     def send_message(self, request_id: int, msg: str, town: Optional[str]) -> None:
         message = {'request_id': request_id, 'message': msg, "town": town}
+
+        self.lock.acquire()
+        
         if self.retries > self.max_retries:
             print(f'too much fails')
             self.channel.basic_publish(exchange='',
@@ -43,6 +48,9 @@ class RMQSender:
                                            content_encoding='utf-8',
                                            delivery_mode=1,
                                        ))
+            self.retries = 0
+            self.lock.release()
+            return
 
         try:
             self.channel.basic_publish(exchange='',
@@ -68,6 +76,9 @@ class RMQSender:
         print(f"Sent message to the input queue: [{msg}]")
         print(f"Input queue name: [{self.queue}]")
         self.retries = 0
+
+        self.lock.release()
+
 
     def close_connection(self) -> None:
         self.connection.close()
