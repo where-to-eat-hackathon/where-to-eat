@@ -133,7 +133,8 @@ async def send_async_answer(id_user: int, answer_body):
         await BotWorker.bot.send_message(id_user, text)
     context_state = FSMContext(storage=BotWorker.dp.storage, key=StorageKey(BotWorker.bot.id, id_user, id_user))
     a = await context_state.get_data()
-    await context_state.update_data(income_msg=UStates.AVAILABLE)
+    await context_state.update_data(income_msg=UStates.AWAITING_USER_MEAL_REQUEST)
+    await BotWorker.bot.send_message(id_user, "Можешь оптправить ещё одно сообщение!")
 
 
 def send_sync_answer(ch, method, properties, body):
