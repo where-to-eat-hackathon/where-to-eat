@@ -14,10 +14,10 @@ rabbitmq:
   resources:
     requests:
       cpu: 300m
-      memory: "256Mi"
+      memory: "512Mi"
     limits:
       cpu: 800m
-      memory: "512Mi"
+      memory: "1024Mi"
 
   clustering:
     forceBoot: true
@@ -25,11 +25,11 @@ rabbitmq:
 qdrant:
   resources:
     requests:
-      cpu: 200m
-      memory: "512Mi"
+      cpu: 400m
+      memory: "1024Mi"
     limits:
       cpu: 1
-      memory: "1024Mi"
+      memory: "1536Mi"
   persistence:
     storageClassName: *storageclass
 
@@ -39,11 +39,11 @@ nlp-service:
     tag: main_98f9c1
   resources:
     requests:
-      cpu: 300m
+      cpu: 400m
       memory: "1024Mi"
     limits:
       cpu: 1
-      memory: "2048Mi"
+      memory: "1536Mi"
   qdrant:
     collectionName: "reviews-MiniLM-L12-V2"
 
@@ -52,10 +52,10 @@ telegram-bot:
     tag: main_76f720
   resources:
     requests:
-      cpu: 100m
+      cpu: 300m
       memory: "256Mi"
     limits:
-      cpu: 250m
-      memory: "384Mi"
+      cpu: 500m
+      memory: "512Mi"
   tgApi:
     token: "${BOT_TOKEN}"
