@@ -18,6 +18,7 @@ __all__ = ["async_main", "sync_main", "send_async_answer",
 import config
 
 
+
 class BotWorker:
     # Scenario:
     # 1) User entered his meal request
@@ -85,6 +86,7 @@ async def query_message(message: types.Message, state: FSMContext):
         append_task.start()
         await state.update_data(bot_state=UStates.AWAITING_SERVICE_RESPONSE)
         await state.update_data(time_stamp=time())
+        await message.answer(f"Твой запрос улетел на обработку! Подожди чуть-чуть.")
 
     data = await state.get_data()
     if bot_state_key not in data:
@@ -127,13 +129,19 @@ async def send_async_answer(id_user: int, answer_body):
         name = res["name"]
         address = res["address"]
         rating = str(res["rating"])
-        text += f"{name} (адресс = {address}, рейтинг = {rating})\n"
-        text += f"Комментарий: {text}\n"
-        text += "\n"
+        comment = res["text"]
+        geo = res["geocode"]
+        text += f"{name} \n📍 {address} \t {rating}/5\n"
+        text += f"{comment}\n"
         await BotWorker.bot.send_message(id_user, text)
+        if geo is None:
+            continue
+        latitude = geo['latitude']
+        longitude = geo['longitude']
+        await BotWorker.bot.send_location(id_user, latitude, longitude)
     context_state = FSMContext(storage=BotWorker.dp.storage, key=StorageKey(BotWorker.bot.id, id_user, id_user))
     a = await context_state.get_data()
-    await context_state.update_data(income_msg=UStates.AWAITING_USER_MEAL_REQUEST)
+    await context_state.update_data(bot_state=UStates.AWAITING_USER_MEAL_REQUEST)
     await BotWorker.bot.send_message(id_user, "Можешь оптправить ещё одно сообщение!")
 
 

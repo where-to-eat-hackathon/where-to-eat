@@ -1,6 +1,7 @@
 import json
 import pika
 import os
+from time import time
 
 from common import (
     INPUT_QUEUE_NAME_ENVAR_KEY_NAME,
@@ -54,17 +55,21 @@ def find_geocode_distance(goal: GeocodedAddress, given_coord: Optional[GeocodedA
 class PythonService:
     def __init__(self):
         # =============== RMQ configuration ================
-        rmq_url = os.getenv(RMQ_URL_ENVAR_KEY_NAME)
-        rmq_username = os.getenv(RMQ_USERNAME_ENVAR_KEY_NAME)
-        rmq_password = os.getenv(RMQ_PASSWORD_ENVAR_KEY_NAME)
-        rmq_port = int(os.getenv(RMQ_PORT_ENVAR_KEY_NAME))
+        self.rmq_url = os.getenv(RMQ_URL_ENVAR_KEY_NAME)
+        self.rmq_username = os.getenv(RMQ_USERNAME_ENVAR_KEY_NAME)
+        self.rmq_password = os.getenv(RMQ_PASSWORD_ENVAR_KEY_NAME)
+        self.rmq_port = int(os.getenv(RMQ_PORT_ENVAR_KEY_NAME))
+        self.retries = 0
+        self.max_retries = 5
+        self.last_try_time = None
+        self.allowed_time_interval = 10
 
         output_connection = pika.BlockingConnection(
             pika.ConnectionParameters(
-                host=rmq_url,
-                port=rmq_port,
+                host=self.rmq_url,
+                port=self.rmq_port,
                 credentials=pika.credentials.PlainCredentials(
-                    username=rmq_username, password=rmq_password
+                    username=self.rmq_username, password=self.rmq_password
                 ),
             )
         )
@@ -75,10 +80,10 @@ class PythonService:
 
         input_connection = pika.BlockingConnection(
             pika.ConnectionParameters(
-                host=rmq_url,
-                port=rmq_port,
+                host=self.rmq_url,
+                port=self.rmq_port,
                 credentials=pika.credentials.PlainCredentials(
-                    username=rmq_username, password=rmq_password
+                    username=self.rmq_username, password=self.rmq_password
                 ),
             )
         )
@@ -176,6 +181,36 @@ class PythonService:
             )
         return response
 
+    def send_response(self, serialized_response, output_queue_name, time):
+        if time > self.max_retries:
+            self.rmq_output_channel.basic_publish(
+                exchange='',
+                routing_key=output_queue_name,
+                body=serialized_response
+            )
+            return
+        try:
+            self.rmq_output_channel.basic_publish(
+                exchange='',
+                routing_key=output_queue_name,
+                body=serialized_response
+            )
+        except:
+            output_connection = pika.BlockingConnection(
+                pika.ConnectionParameters(
+                    host=self.rmq_url,
+                    port=self.rmq_port,
+                    credentials=pika.credentials.PlainCredentials(
+                        username=self.rmq_username, password=self.rmq_password
+                    ),
+                )
+            )
+            rmq_output_channel = output_connection.channel()
+            output_queue_name = os.getenv(OUTPUT_QUEUE_NAME_ENVAR_KEY_NAME)
+            rmq_output_channel.queue_declare(queue=output_queue_name, durable=True)
+            self.rmq_output_channel = rmq_output_channel
+            self.send_response(serialized_response, output_queue_name, time + 1)
+
     def handle_request_callback(self, ch, method, properties, body):
         request = ServiceRequest(**json.loads(body))
         print(f"Successfully get message: [{request}]")
@@ -189,14 +224,42 @@ class PythonService:
         )
 
         output_queue_name = os.getenv(OUTPUT_QUEUE_NAME_ENVAR_KEY_NAME)
-        self.rmq_output_channel.basic_publish(
-            exchange='',
-            routing_key=output_queue_name,
-            body=serialized_response
-        )
+        self.send_response(serialized_response, output_queue_name, 0)
 
     def start_listening_input_query(self):
-        self.rmq_input_channel.start_consuming()
+        self.last_try_time = time()
+        while True:
+            if self.retries > self.max_retries:
+                self.rmq_input_channel.start_consuming()
+                raise Exception("too mush retries")
+            try:
+                self.rmq_input_channel.start_consuming()
+            except:
+                print(f"error while listening")
+                if time() - self.last_try_time > self.allowed_time_interval:
+                    self.retries += 1
+                else:
+                    self.retries = 0
+
+                input_connection = pika.BlockingConnection(
+                    pika.ConnectionParameters(
+                        host=self.rmq_url,
+                        port=self.rmq_port,
+                        credentials=pika.credentials.PlainCredentials(
+                            username=self.rmq_username, password=self.rmq_password
+                        ),
+                    )
+                )
+                rmq_input_channel = input_connection.channel()
+                input_queue_name = os.getenv(INPUT_QUEUE_NAME_ENVAR_KEY_NAME)
+                rmq_input_channel.queue_declare(queue=input_queue_name, durable=True)
+                rmq_input_channel.basic_consume(
+                    queue=input_queue_name,
+                    on_message_callback=self.handle_request_callback,
+                    auto_ack=True
+                )
+                self.rmq_input_channel = rmq_input_channel
+
 
 
 if __name__ == "__main__":
