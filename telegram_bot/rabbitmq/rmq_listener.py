@@ -38,6 +38,7 @@ class RMQListener:
         while True:
             if self.retries > self.max_retries:
                 self.channel.start_consuming()
+                raise Exception("too mush retries")
             try:
                 self.channel.start_consuming()
             except:
