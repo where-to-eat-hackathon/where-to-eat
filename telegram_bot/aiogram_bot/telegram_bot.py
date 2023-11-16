@@ -4,7 +4,6 @@ from aiogram.filters.command import Command
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.base import StorageKey
-from typing import List
 import asyncio
 import threading
 from enum import Enum
@@ -58,7 +57,7 @@ async def set_initial_state(message, state):
     await state.set_state(UserState.bot_state)
     await state.update_data(bot_state=UStates.AWAITING_TOWN_MESSAGE)
     await state.set_state(UserState.time_stamp)
-    await message.answer(f"Привет!\nСкажи, пожалуйста, из какого ты города?")
+    await message.answer("Привет!\nСкажи, пожалуйста, из какого ты города?")
 
 
 @BotWorker.dp.message(Command("start"))
@@ -75,7 +74,7 @@ async def query_message(message: types.Message, state: FSMContext):
         print(f"Got town name {query}")
         BotWorker.user_to_town_dict[id_user] = query
         await state.update_data(bot_state=UStates.AWAITING_USER_MEAL_REQUEST)
-        await message.answer(f"Теперь напиши свой запрос, пожалуйста")
+        await message.answer("Теперь напиши свой запрос, пожалуйста")
 
     async def accept_meal_request_message():
         id_user = message.from_user.id
@@ -86,7 +85,7 @@ async def query_message(message: types.Message, state: FSMContext):
         append_task.start()
         await state.update_data(bot_state=UStates.AWAITING_SERVICE_RESPONSE)
         await state.update_data(time_stamp=time())
-        await message.answer(f"Твой запрос улетел на обработку! Подожди чуть-чуть.")
+        await message.answer("Твой запрос улетел на обработку! Подожди чуть-чуть.")
 
     data = await state.get_data()
     if bot_state_key not in data:
@@ -142,7 +141,7 @@ async def send_async_answer(id_user: int, answer_body):
     context_state = FSMContext(storage=BotWorker.dp.storage, key=StorageKey(BotWorker.bot.id, id_user, id_user))
     a = await context_state.get_data()
     await context_state.update_data(bot_state=UStates.AWAITING_USER_MEAL_REQUEST)
-    await BotWorker.bot.send_message(id_user, "Можешь оптправить ещё одно сообщение!")
+    await BotWorker.bot.send_message(id_user, "Можешь отправить ещё одно сообщение!")
 
 
 def send_sync_answer(ch, method, properties, body):
