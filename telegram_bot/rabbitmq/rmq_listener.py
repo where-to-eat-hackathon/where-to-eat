@@ -3,7 +3,7 @@ from typing import Callable
 
 
 def defaultCallback(ch, method, properties, body):
-    print(f" [x] Received {body.decode(properties.content_encoding)}")
+    print(f" [x] Received {body.decode(properties.content_encoding)} from output queue")
 
 
 class RMQListener:
@@ -26,6 +26,7 @@ class RMQListener:
         self.channel = self.connection.channel()
         self.channel.queue_declare(queue=self.queue, durable=True)
         self.channel.basic_consume(queue=self.queue, on_message_callback=self.callback, auto_ack=True)
+        print(f"Set listener on queue with name: [{self.queue}]")
     
     def listen(self):
         self.channel.start_consuming()
