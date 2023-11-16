@@ -122,21 +122,7 @@ def send_query_to_queue(id_user, query, town):
 
 async def send_async_answer(id_user: int, answer_body):
     text = "Вот подходящие вам варианты:\n"
-    await BotWorker.bot.send_message(id_user, text)
     for res in answer_body:
-        text = ""
-        name = res["name"]
-        address = res["address"]
-        rating = str(res["rating"])
-        text += f"{name} (адресс = {address}, рейтинг = {rating})\n"
-        text += f"Комментарий: {text}\n"
-        text += "\n"
-        await BotWorker.bot.send_message(id_user, text)
-    context_state = FSMContext(storage=BotWorker.dp.storage, key=StorageKey(BotWorker.bot.id, id_user, id_user))
-async def send_async_answer(id_user: int, answer_body):
-    text = "Вот подходящие вам варианты:\n"
-    if len(answer_body) >= 1:
-        res = answer_body[0]
         name = res["name"]
         address = res["address"]
         rating = str(res["rating"])
