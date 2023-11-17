@@ -49,7 +49,7 @@ nlp-service:
 
 telegram-bot:
   image:
-    tag: main_76f720
+    tag: check-towns_8ee1fe
   resources:
     requests:
       cpu: 300m
