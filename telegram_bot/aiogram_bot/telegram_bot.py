@@ -72,9 +72,12 @@ async def query_message(message: types.Message, state: FSMContext):
         query = message.text
 
         print(f"Got town name {query}")
-        BotWorker.user_to_town_dict[id_user] = query
-        await state.update_data(bot_state=UStates.AWAITING_USER_MEAL_REQUEST)
-        await message.answer("Теперь напиши свой запрос, пожалуйста")
+        if not (query == "Санкт-Петербург" or query == "Москва"):
+            await message.answer("Извини. Пока что поддерживаются только Санкт-Петербург и Москва. Попробуй ввести один из этих городов.")
+        else:
+            BotWorker.user_to_town_dict[id_user] = query
+            await state.update_data(bot_state=UStates.AWAITING_USER_MEAL_REQUEST)
+            await message.answer("Теперь напиши свой запрос, пожалуйста")
 
     async def accept_meal_request_message():
         id_user = message.from_user.id
